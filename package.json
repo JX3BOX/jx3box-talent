@@ -20,7 +20,7 @@
         "progress": "^2.0.3"
     },
     "devDependencies": {
-        "axios": "^0.21.2",
+        "axios": "^1.6.0",
         "csslab": "^4.0.3",
         "csv": "^5.3.2",
         "csv-generate": "^3.2.4",
