@@ -9,7 +9,7 @@
     },
     "dependencies": {
         "@jx3box/jx3box-build-common": "^0.1.9",
-        "@jx3box/jx3box-common": "^8.2.8",
+        "@jx3box/jx3box-common": "^8.2.11",
         "@jx3box/jx3box-data": "^3.5.8",
         "ansi-escapes": "^5.0.0",
         "cli-color": "^2.0.3",
