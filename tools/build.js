@@ -218,9 +218,9 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
     }
     Logger.info("构建结束,开始输出...");
     fs.writeFileSync("./dist/talents.json", JSON.stringify(datas.talents));
-    fs.writeFileSync("./output/talents.json", JSON.stringify(datas.talents));
+    fs.writeFileSync("./output/std/talents.json", JSON.stringify(datas.talents));
     fs.writeFileSync(
-        `./output/v${dateFormat(new Date())}.json`,
+        `./output/std/v${dateFormat(new Date())}.json`,
         JSON.stringify(datas.result)
     );
     writeCsvFile(

@@ -29,7 +29,6 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
 		mobile_kungfu_map: (await readTabFile(path.join(__dirname, '../raw/skill_mobile/MainKungfuInfo.tab'))).reduce((acc, cur) => {
 			if (cur.name === '移动端_山居剑意') cur.name = '移动端_问水诀';
 			acc[cur.TalentGroup] = cur.name.replace('移动端_', '');
-			console.log(acc);
 			return acc;
 		}, {}),
 		skill: [],
@@ -118,7 +117,6 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
 		for (let point of datas.points) {
 			let school = datas.school_map[point.ForceID];
 			let kungfu = datas.mobile_kungfu_map[point.KungFuID];
-			console.log(kungfu);
 			let mountID = datas.xf[kungfu]['id'];
 
 			let _talents = [];
@@ -144,8 +142,6 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
 					_talents.push(keys[0]);
 				}
 			}
-			// console.log(datas.talents);
-			console.log(mountID);
 			datas.talents[mountID].push(_talents);
 		}
 	}
@@ -195,11 +191,11 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
 		bar.terminate();
 	}
 	Logger.info('构建结束,开始输出...');
-	fs.writeFileSync('./dist/talents.json', JSON.stringify(datas.talents));
-	fs.writeFileSync('./output/talents.json', JSON.stringify(datas.talents));
-	fs.writeFileSync(`./output/v${dateFormat(new Date())}.json`, JSON.stringify(datas.result));
+	fs.writeFileSync('./dist/wujie/talents.json', JSON.stringify(datas.talents));
+	fs.writeFileSync('./output/wujie/talents.json', JSON.stringify(datas.talents));
+	fs.writeFileSync(`./output/wujie/v${dateFormat(new Date())}.json`, JSON.stringify(datas.result));
 	writeCsvFile(
-		'./dist/temp.csv',
+		'./dist/wujie/temp.csv',
 		datas.temp.map((t) => {
 			for (let key in t) {
 				t[datas.temp_title_map[key]] = t[key];
