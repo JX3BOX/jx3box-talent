@@ -126,7 +126,7 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
 				let skill = datas.skill_txt[`${keys[0]}_${keys[1]}`];
 				if (!skill) skill = datas.skill_txt[`${keys[0]}_0`];
 				if (skill) {
-					let order = ((~~point.PointID - 1) % 12) + 1;
+					let order = ((~~point.PointID - 1) % 4) + 1;
 					datas.temp.push({
 						school,
 						kungfu,
