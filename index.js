@@ -18,18 +18,16 @@
 import _ from "lodash";
 import $ from "jquery";
 import JX3BOX from "@jx3box/jx3box-common/data/jx3box.json";
-const {
-    __iconPath,
-    __dataPath,
-} = JX3BOX;
+const { __iconPath, __dataPath } = JX3BOX;
 
 class JX3_QIXUE {
     /**
      * @param {object} opt 初始化参数
      * opt.container     {string}    容器选择器
-     * opt.xf            {stirng}    心法
+     * opt.xf            {string}    心法
      * opt.sq            {string}    序列
      * opt.editable      {boolean}   是否为可编辑模式
+     * opt.client        {string}    旗舰端std、无界端wujie
      */
     constructor(opt) {
         //构建器参数默认值
@@ -39,12 +37,15 @@ class JX3_QIXUE {
             xf: "其它",
             sq: "1,1,1,1,1,1,1,1,1,1,1,1",
             editable: false,
+            client: "std",
         };
+        if (opt && opt.client == "wujie" && !opt.sq) opt.sq = "1,1,1,1";
+        // 未传递
+        if (!opt) opt = this._default;
 
+        this._resetData(opt);
         //初始化字段
-        this._qixue_url = __dataPath + "talent/";
         this._img_path = __iconPath + "icon/";
-        this._total_levels = 12; //奇穴共12重
         this._item_attr_list = [
             "icon", //图标id
             "name", //奇穴名称
@@ -56,15 +57,12 @@ class JX3_QIXUE {
             "extend", //技能长述
         ];
         this._data = {}; //格式化数据对象
-        this.isQQBrowser = window.navigator.userAgent.includes('QQBrowser')
-
-        // 未传递
-        if (!opt) opt = this._default;
+        this.isQQBrowser = window.navigator.userAgent.includes("QQBrowser");
 
         // 导出内容
         this.txt = new Array(this._total_levels); //文字版
-        this.code = {version:'',xf:'',sq:''}
-        this.overview = []
+        this.code = { version: "", xf: "", sq: "" };
+        this.overview = [];
 
         return this._init(opt);
     }
@@ -170,8 +168,7 @@ class JX3_QIXUE {
         let __opt = opt;
         //opt.xf && (__opt.xf = this._checkParamXF(opt.xf))
         opt.sq && (__opt.sq = this._checkParamSQ(opt.sq));
-        opt.editable &&
-            (__opt.editable = this._checkParamEditable(opt.editable));
+        opt.editable && (__opt.editable = this._checkParamEditable(opt.editable));
         return __opt;
     }
 
@@ -197,22 +194,22 @@ class JX3_QIXUE {
         this.map = this._data[opt.xf];
         this.sq = opt.sq.split(",");
         this.editable = opt.editable;
-        this.code = {version:opt.version,xf:opt.xf,sq:opt.sq}
-        this.overview = this._buildTalentOutputData(this.sq,this.map)
+        this.code = { version: opt.version, xf: opt.xf, sq: opt.sq };
+        this.overview = this._buildTalentOutputData(this.sq, this.map);
     }
 
     //构建奇穴有效吐出数据
-    _buildTalentOutputData(sq,data){
-        let overview = []
-        sq.forEach((item,i) => {
-            let _record = data[i + 1][item]
+    _buildTalentOutputData(sq, data) {
+        let overview = [];
+        sq.forEach((item, i) => {
+            let _record = data[i + 1][item];
             overview.push({
-                id : ~~_record.id,
-                icon : ~~_record.icon,
-                name : _record.name
-            })
-        })
-        return overview
+                id: ~~_record.id,
+                icon: ~~_record.icon,
+                name: _record.name,
+            });
+        });
+        return overview;
     }
 
     //结构化容器
@@ -228,9 +225,11 @@ class JX3_QIXUE {
             this.container = $(opt.container);
         }
 
+        // 清空Dom
+        this.container.empty();
         //结构化包裹层
         this.container.append(`
-            <div class="w-qixue-box ${this.isQQBrowser && 'isQQBrowser'}">
+            <div class="w-qixue-box ${this.isQQBrowser && "isQQBrowser"}">
                 <div class="w-qixue-xf">奇穴</div>
                 <ul class="w-qixue-clist"></ul>
                 <div class="w-qixue-obox"></div>
@@ -332,8 +331,7 @@ class JX3_QIXUE {
 
         //给技能类增加样式
         this._olist.find(".w-qixue-olist-item").each(function (i, ele) {
-            if (parseInt($(this).attr("data-is_skill")))
-                $(this).addClass("w-qixue-is_skill");
+            if (parseInt($(this).attr("data-is_skill"))) $(this).addClass("w-qixue-is_skill");
         });
 
         //绑定事件
@@ -367,9 +365,7 @@ class JX3_QIXUE {
             $(this).toggleClass("on");
 
             //任意一个展开
-            __instance._clist.find(".on").length
-                ? __instance._obox.addClass("on")
-                : __instance._obox.removeClass("on");
+            __instance._clist.find(".on").length ? __instance._obox.addClass("on") : __instance._obox.removeClass("on");
 
             //展开可选菜单
             __instance._olist.removeClass("on");
@@ -399,19 +395,17 @@ class JX3_QIXUE {
 
             let isNotExist = $(this).children(".w-qixue-item-pop").length == 0;
             let __html = `<b class="u-name">${name}</b>`;
-                __html += `<b class="u-skill">${skill_type}</b>`;
-                if (is_skill && meta != "null" && meta != undefined)
-                    __html += `<em class="u-meta">${meta}</em>`;
-                __html += `<span class="u-desc">${desc}</span>`;
-                if (is_skill && extend != "null" && meta != undefined)
-                    __html += `<em class="u-extend">${extend}</em>`;
+            __html += `<b class="u-skill">${skill_type}</b>`;
+            if (is_skill && meta != "null" && meta != undefined) __html += `<em class="u-meta">${meta}</em>`;
+            __html += `<span class="u-desc">${desc}</span>`;
+            if (is_skill && extend != "null" && meta != undefined) __html += `<em class="u-extend">${extend}</em>`;
 
             if (isNotExist) {
-                let wrapper_prefix =`<span class="w-qixue-item-pop">`
-                let wrapper_suffix = `</span>`
+                let wrapper_prefix = `<span class="w-qixue-item-pop">`;
+                let wrapper_suffix = `</span>`;
                 $(this).append(wrapper_prefix + __html + wrapper_suffix);
-            }else{
-                $(this).children(".w-qixue-item-pop").html(__html)
+            } else {
+                $(this).children(".w-qixue-item-pop").html(__html);
             }
         });
         //控制显示隐藏显示
@@ -426,7 +420,7 @@ class JX3_QIXUE {
     //切换奇穴
     _changeEvent() {
         let __instance = this;
-        this._olist.on("click", "li", function (e) {
+        this._olist.on("click", "li", function () {
             //缓存选择
             let $from = $(this);
             let __order = $from.parent("ul").index();
@@ -438,10 +432,7 @@ class JX3_QIXUE {
             });
 
             //更改图片&标题
-            $to.find("img").attr(
-                "src",
-                `${__instance._img_path + $from.attr("data-icon")}.png`
-            );
+            $to.find("img").attr("src", `${__instance._img_path + $from.attr("data-icon")}.png`);
             $to.find("img").attr("alt", $from.attr("data-name"));
             $to.find(".u-title").text($from.attr("data-name"));
 
@@ -453,16 +444,21 @@ class JX3_QIXUE {
             //更新内部数据
             __instance.sq[__order] = $from.attr("data-pos");
             __instance.txt[__order] = $from.attr("data-name");
-            __instance.code.sq = __instance.sq.toString()
+            __instance.code.sq = __instance.sq.toString();
             __instance.overview[__order] = {
-                id : ~~$from.attr("data-id"),
-                icon : ~~$from.attr("data-icon"),
-                name : $from.attr("data-name"),
-            }
+                id: ~~$from.attr("data-id"),
+                icon: ~~$from.attr("data-icon"),
+                name: $from.attr("data-name"),
+            };
 
             //触发自定义事件
             $(document).trigger("JX3_QIXUE_Change", __instance);
         });
+    }
+
+    _resetData(opt) {
+        this._qixue_url = __dataPath + "talent/" + opt.client + "/";
+        this._total_levels = opt.client == "wujie" ? 4 : 12; //无界奇穴4重，旗舰奇穴12重
     }
 
     /* 公开方法 
@@ -474,8 +470,14 @@ class JX3_QIXUE {
         if (opt == undefined) return;
 
         let __opt = {};
+
+        if (!opt.sq) {
+            opt.sq = opt.client == "wujie" ? "1,1,1,1" : "1,1,1,1,1,1,1,1,1,1,1,1";
+        }
+        this._resetData(opt);
         __opt = this._checkParam(opt);
 
+        this._structureViewBox(__opt);
         return this._build(__opt).then((data) => {
             $(document).trigger("JX3_QIXUE_Change", this);
             return data;
