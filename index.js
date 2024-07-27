@@ -61,7 +61,7 @@ class JX3_QIXUE {
 
         // 导出内容
         this.txt = new Array(this._total_levels); //文字版
-        this.code = { version: "", xf: "", sq: "" };
+        this.code = { version: "", xf: "", sq: "", client: opt.client }; //代码版
         this.overview = [];
 
         return this._init(opt);
@@ -194,7 +194,7 @@ class JX3_QIXUE {
         this.map = this._data[opt.xf];
         this.sq = opt.sq.split(",");
         this.editable = opt.editable;
-        this.code = { version: opt.version, xf: opt.xf, sq: opt.sq };
+        this.code = { version: opt.version, xf: opt.xf, sq: opt.sq, client: opt.client };
         this.overview = this._buildTalentOutputData(this.sq, this.map);
     }
 
