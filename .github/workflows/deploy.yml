@@ -21,16 +21,16 @@ jobs:
                       cd jx3box-talent
                       git pull origin master
 
-    sync-top-oss:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@master
+    # sync-top-oss:
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #         - name: Checkout
+    #           uses: actions/checkout@master
 
-            - name: OSS
-              uses: manyuanrong/setup-ossutil@v2.0
-              with:
-                  endpoint: "oss-cn-hangzhou.aliyuncs.com"
-                  access-key-id: ${{secrets.ACCESSKEY_ID}}
-                  access-key-secret: ${{secrets.ACCESS_KEY_SECRET}}
-            - run: ossutil cp -rf output oss://jx3box/data/qixue
+    #         - name: OSS
+    #           uses: manyuanrong/setup-ossutil@v2.0
+    #           with:
+    #               endpoint: "oss-cn-hangzhou.aliyuncs.com"
+    #               access-key-id: ${{secrets.ACCESSKEY_ID}}
+    #               access-key-secret: ${{secrets.ACCESS_KEY_SECRET}}
+    #         - run: ossutil cp -rf output oss://jx3box/data/qixue
