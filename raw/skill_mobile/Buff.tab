@@ -6011,3 +6011,6 @@ ID	Name	Useage	FunctionType	RepresentPos	RepresentID	AppendType	DetachType	BuffT
 71371	移动端_春晖	419		Body	0	71371	0		1	1	0	1	1	159984	0	1	1							1	0	0	atGlobalResistPercent	52																																																		atCallBuff	71371	1						4294967294	0		0	0						0		159984		63	1	159984	1	0	1				0	0		0
 71372	移动端_衍天_天人合一_秘籍绝篇	418		Body	0	71372	0		1	1	0	1	1	8	0	1	1							1	0	1	atSetNextBuffCount	30		atCallSubBuff	70345	10	atSetNextBuffCount	30		atCallSubBuff	70729	10	atSetNextBuffCount	30		atCallSubBuff	70161	10																																										3758030846	0		0	0						0		8		63	1	8	1	0	1							
 71373	移动端_冰蚕牵丝链状特效	408		Body	0	71373	0		1	1	0	1	1	16	0	1	1							1	0	1																																																												3758030846	0		0	0						0		16		63	1	16	1	0	1						154	
+71374	防外挂占位1	407		Body	0	71374	0		1	1	0	1	1	999999	0	1	1		Fight					1	0	0																																																												3758030846	0		0	0						0		999999		63	1	999999	1	0	0							
+71375	防外挂占位2	407		Body	0	71375	0		1	1	0	1	1	999999	0	1	1		Fight					1	0	0																																																												3758030846	0		0	0						0		999999		63	1	999999	1	0	0							
+71376	防外挂占位3	407		Body	0	71376	0		1	1	0	1	1	999999	0	1	1		Fight					1	0	0																																																												3758030846	0		0	0						0		999999		63	1	999999	1	0	0							
