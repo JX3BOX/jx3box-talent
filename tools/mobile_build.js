@@ -26,7 +26,7 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
 		school_map: force_ids,
 		kungfu_map,
 		xf,
-		mobile_kungfu_map: (await readTabFile(path.join(__dirname, '../raw/skill_mobile/MainKungfuInfo.tab'))).reduce((acc, cur) => {
+		mobile_kungfu_map: (await readTabFile(path.join(__dirname, '../raw/skill_mobile/mainkungfuinfo.tab'))).reduce((acc, cur) => {
 			if (cur.name === '移动端_山居剑意') cur.name = '移动端_问水诀';
 			acc[cur.TalentGroup] = cur.name.replace('移动端_', '');
 			return acc;
@@ -47,7 +47,7 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
 			acc[key] = cur;
 			return acc;
 		}, {}),
-		buff_tab: (await readTabFile(path.join(__dirname, '../raw/skill_mobile/buff.tab'))).reduce((acc, cur) => {
+		buff_tab: (await readTabFile(path.join(__dirname, '../raw/skill_mobile/Buff.tab'))).reduce((acc, cur) => {
 			let key = `${cur.ID}_${cur.Level}`;
 			cur.BuffID = cur.ID;
 			cur.BuffName = cur.Name;
@@ -154,7 +154,7 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
 		let icon = parseInt(skill.IconID);
 		let order = `${qixue.order}`; //第几层
 		let pos = qixue.position; //某层的第几个
-		let is_skill = !isNullOrZero(skill.HelpDesc) ? 1 : 0;
+		let is_skill = !isNullOrZero(skill.HelpDesc) ? 1 : 0 || ~~skill.IsPassiveSkill == 1 ? 0 : 1;
 		let meta = skill['SpecialDesc'];
 		let extend = skill['HelpDesc'];
 		let id = qixue.skillID;
