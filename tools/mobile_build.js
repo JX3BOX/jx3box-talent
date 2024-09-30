@@ -117,6 +117,7 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
 		for (let point of datas.points) {
 			let school = datas.school_map[point.ForceID];
 			let kungfu = datas.mobile_kungfu_map[point.KungFuID];
+			if(kungfu=== '南诏段氏') kungfu = '周天功';
 			let mountID = datas.xf[kungfu]['id'];
 
 			let _talents = [];
