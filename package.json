@@ -34,6 +34,6 @@
     "scripts": {
         "update": "npm install @jx3box/jx3box-common@latest @jx3box/jx3box-data@latest",
         "build": "npx lessc ./talent.less ./talent.css",
-        "talent": "node ./tools/prepare.js && node ./tools/build.js"
+        "talent": "node ./tools/prepare.js && node ./tools/build.js && node ./tools/mobile_build.js"
     }
 }
