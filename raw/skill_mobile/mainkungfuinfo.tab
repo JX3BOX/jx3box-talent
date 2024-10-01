@@ -30,4 +30,3 @@ KungfuID	KungfuIndex	ForceID	TalentGroup	KungfuType	name	AdaptiveType	Nonadaptiv
 101374	28	212	1028	THERAPY	移动端_灵素	Poison	Physics
 101375	30	213	1029	DPS	移动端_孤锋诀	Physics	SolarMagic
 101740	32	214	1031	DPS	移动端_山海心诀	Physics	Physics
-102278	33	215	1032	DPS	移动端_南诏段氏	NeutralMagic	Physics
