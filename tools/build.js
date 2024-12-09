@@ -141,7 +141,7 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
             let school = datas.school_map[point.ForceID];
             let kungfu = datas.kungfu_map[point.KungFuID];
             let mountID = datas.xf[kungfu]["id"];
-
+            
             let _talents = [];
             let _position = 1;
             for (let index of [1, 2, 3, 4, 5]) {
