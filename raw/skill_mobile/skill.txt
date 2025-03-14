@@ -5,6 +5,7 @@ SkillID	Level	IconID	Show	CombatShow	Formation	FormationCaster	PracticeID	SortOr
 42	1										盾击·悟·贰式																			
 43	1										盾击·悟·叁式																			
 53	0										新建																			
+7415	0										无量山任务_轰炸AOE																			
 18648	0	106									麻布绷带	绷带																		
 19564	0	10472									厉风	高速旋转在周围引发毒血旋风，五秒内每秒对周围敌人造成大量伤害并免疫一切控制效果。																		
 19565	0	10472									厉风	高速旋转在周围引发毒血旋风，五秒内每秒对周围敌人造成大量伤害并免疫一切控制效果。																		
