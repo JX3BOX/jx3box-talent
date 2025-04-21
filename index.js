@@ -19,6 +19,7 @@ import _ from "lodash";
 import $ from "jquery";
 import JX3BOX from "@jx3box/jx3box-common/data/jx3box.json";
 const { __iconPath, __dataPath } = JX3BOX;
+const ZHCN_NUM = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
 
 class JX3_QIXUE {
     /**
@@ -203,6 +204,14 @@ class JX3_QIXUE {
         let overview = [];
         sq.forEach((item, i) => {
             let _record = data[i + 1][item];
+            if(!_record) {
+                overview.push({
+                    id: 0,
+                    icon: 0,
+                    name: `第${ZHCN_NUM[i]}重`,
+                }); 
+                return;
+            }
             overview.push({
                 id: ~~_record.id,
                 icon: ~~_record.icon,
@@ -264,16 +273,28 @@ class JX3_QIXUE {
         this._xfbox.text(this.xf);
 
         //奇穴单项数据加载
-        $.each(__instance.sq, function (i, val) {
+            $.each(__instance.sq, function (i, val) {
             let level = __instance.map[i + 1];
             let point = level[val];
             //console.log(`第${i + 1}重：`,level)
-
             //标签属性
+            if(!point) {
+                point = {
+                    desc: "无",
+                    extend: null,
+                    icon: null,
+                    id: 0,
+                    is_skill: 0,
+                    meta: null,
+                    name: `第${ZHCN_NUM[i]}重`,
+                    order: i + 1,
+                    pos: 0,
+                }
+            }
+
             $.each(__instance._item_attr_list, function (j, key) {
                 __items.eq(i).attr(`data-${key}`, point[key]);
             });
-
             //图片与文字
             let icon_url = `${__instance._img_path + point["icon"]}.png`;
 
@@ -313,7 +334,7 @@ class JX3_QIXUE {
                         data-id="${point["id"]}" 
                         data-icon="${point["icon"]}" 
                         data-name="${point["name"]}"
-                        data-desc="${point["desc"]}"
+                        data-desc="${point["desc"] || "无"}"
                         data-order="${point["order"]}"
                         data-pos="${point["pos"]}"
                         data-is_skill="${point["is_skill"]}"
