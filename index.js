@@ -19,7 +19,32 @@ import _ from "lodash";
 import $ from "jquery";
 import JX3BOX from "@jx3box/jx3box-common/data/jx3box.json";
 const { __iconPath, __dataPath } = JX3BOX;
-const ZHCN_NUM = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
+const ZHCN_NUM = [
+    "一",
+    "二",
+    "三",
+    "四",
+    "五",
+    "六",
+    "七",
+    "八",
+    "九",
+    "十",
+    "十一",
+    "十二",
+];
+
+const empty_data = i => ({
+    desc: "无",
+    extend: null,
+    icon: null,
+    id: 0,
+    is_skill: 0,
+    meta: null,
+    name: `第${ZHCN_NUM[i]}重`,
+    order: i + 1,
+    pos: 0,
+});
 
 class JX3_QIXUE {
     /**
@@ -77,11 +102,18 @@ class JX3_QIXUE {
         return this._build(opt);
     }
 
+    _getTalentDataUrl = opt => {
+        if (opt.debug) {
+            return `/output/${opt.client}/${opt.version}.json`;
+        }
+        return this._qixue_url + opt.version + ".json";
+    };
+
     //获取奇穴数据
     _getTalentData(opt) {
         return new Promise((resolve, reject) => {
             $.ajax({
-                url: this._qixue_url + opt.version + ".json",
+                url: this._getTalentDataUrl(opt),
                 dataType: "json",
                 success: function (data) {
                     resolve(data);
@@ -106,6 +138,26 @@ class JX3_QIXUE {
         //step.0 加载不同版本json文件
         if (opt.version != this.version) {
             this._data = await this._getTalentData(opt);
+            // 根据json文件。判断版本添加样式类
+            this._clist.children().each((i, ele) => {
+                const type = this._data[opt.xf][i + 1]["_type"];
+                const follow = this._data[opt.xf][i + 1]["_follow"];
+                if (type) {
+                    ele.setAttribute("data-type", type);
+                }
+                if (follow) {
+                    ele.setAttribute("data-follow", follow);
+                }
+                if (type) {
+                    if (i === 0) {
+                        ele.classList.add("w-qixue-type-1-last");
+                    } else if (i === 6) {
+                        ele.classList.add("w-qixue-type-2-last");
+                    } else if (i === 8) {
+                        ele.classList.add("w-qixue-type-3-center");
+                    }
+                }
+            });
         }
 
         //step.1 配置参数
@@ -169,7 +221,8 @@ class JX3_QIXUE {
         let __opt = opt;
         //opt.xf && (__opt.xf = this._checkParamXF(opt.xf))
         opt.sq && (__opt.sq = this._checkParamSQ(opt.sq));
-        opt.editable && (__opt.editable = this._checkParamEditable(opt.editable));
+        opt.editable &&
+            (__opt.editable = this._checkParamEditable(opt.editable));
         return __opt;
     }
 
@@ -195,7 +248,12 @@ class JX3_QIXUE {
         this.map = this._data[opt.xf];
         this.sq = opt.sq.split(",");
         this.editable = opt.editable;
-        this.code = { version: opt.version, xf: opt.xf, sq: opt.sq, client: opt.client };
+        this.code = {
+            version: opt.version,
+            xf: opt.xf,
+            sq: opt.sq,
+            client: opt.client,
+        };
         this.overview = this._buildTalentOutputData(this.sq, this.map);
     }
 
@@ -204,12 +262,12 @@ class JX3_QIXUE {
         let overview = [];
         sq.forEach((item, i) => {
             let _record = data[i + 1][item];
-            if(!_record) {
+            if (!_record) {
                 overview.push({
                     id: 0,
                     icon: 0,
                     name: `第${ZHCN_NUM[i]}重`,
-                }); 
+                });
                 return;
             }
             overview.push({
@@ -251,6 +309,10 @@ class JX3_QIXUE {
         this._clist = this._box.children(".w-qixue-clist");
         this._obox = this._box.children(".w-qixue-obox");
 
+        if (Number(opt.version.split("v")[1]) > 20250921) {
+            this._box.addClass("w-qixue-v20250921");
+        }
+
         //结构化当前list
         let __clist = `
             <li class="w-qixue-clist-item">
@@ -273,23 +335,15 @@ class JX3_QIXUE {
         this._xfbox.text(this.xf);
 
         //奇穴单项数据加载
-            $.each(__instance.sq, function (i, val) {
+        $.each(__instance.sq, function (i, val) {
             let level = __instance.map[i + 1];
+
+            if (level["_follow"]) level = __instance.map[level["_follow"]]; //跟随的取被跟随的
             let point = level[val];
             //console.log(`第${i + 1}重：`,level)
             //标签属性
-            if(!point) {
-                point = {
-                    desc: "无",
-                    extend: null,
-                    icon: null,
-                    id: 0,
-                    is_skill: 0,
-                    meta: null,
-                    name: `第${ZHCN_NUM[i]}重`,
-                    order: i + 1,
-                    pos: 0,
-                }
+            if (!point) {
+                point = empty_data(i);
             }
 
             $.each(__instance._item_attr_list, function (j, key) {
@@ -319,16 +373,35 @@ class JX3_QIXUE {
         this._box.addClass("w-qixue-editable");
 
         //创建每重奇穴中的列表容器
-        let __olist = `
-            <ul class="w-qixue-olist"></ul>
-        `.repeat(this._total_levels);
+        let __olist = ``;
+        let type_3_is_created = false;
+        for (let i = 0; i < this._total_levels; i++) {
+            if (this._data[this.xf][i + 1]["_type"] == 3) {
+                if (type_3_is_created) continue;
+                type_3_is_created = true;
+            }
+            const type = this._data[this.xf][i + 1]["_type"] || 0;
+            let type_class_name = type ? `w-qixue-type-${type}` : "";
+            if (type_class_name && i === 0) {
+                type_class_name += " w-qixue-type-1-last";
+            } else if (type_class_name && i === 6) {
+                type_class_name += " w-qixue-type-2-last";
+            }
+            __olist += `
+                <ul class="w-qixue-olist ${type_class_name}" data-level="${
+                i + 1
+            }" data-type="${type}"></ul>
+            `;
+        }
         this._obox.html(__olist);
         this._olist = this._obox.children(".w-qixue-olist");
 
         //给每一重创建子列表
         let __instance = this;
         $.each(__instance.map, function (i, level) {
+            if (level["_follow"]) level = __instance.map[level["_follow"]]; //跟随的取被跟随的
             $.each(level, function (j, point) {
+                if (isNaN(j)) return; //跳过非数字键
                 __instance._olist.eq(i - 1).append(`
                     <li class="w-qixue-olist-item" 
                         data-id="${point["id"]}" 
@@ -352,7 +425,8 @@ class JX3_QIXUE {
 
         //给技能类增加样式
         this._olist.find(".w-qixue-olist-item").each(function (i, ele) {
-            if (parseInt($(this).attr("data-is_skill"))) $(this).addClass("w-qixue-is_skill");
+            if (parseInt($(this).attr("data-is_skill")))
+                $(this).addClass("w-qixue-is_skill");
         });
 
         //绑定事件
@@ -385,18 +459,59 @@ class JX3_QIXUE {
             $(this).siblings("li").removeClass("on");
             $(this).toggleClass("on");
 
+            // type = 3 的奇穴共享展开状态
+            if ($(this).attr("data-type") == 3) {
+                const ci = __instance._clist.children("li[data-type='3']");
+                $(this).hasClass("on")
+                    ? ci.addClass("on")
+                    : ci.removeClass("on");
+            }
+
             //任意一个展开
-            __instance._clist.find(".on").length ? __instance._obox.addClass("on") : __instance._obox.removeClass("on");
+            __instance._clist.find(".on").length
+                ? __instance._obox.addClass("on")
+                : __instance._obox.removeClass("on");
 
             //展开可选菜单
             __instance._olist.removeClass("on");
             if ($(this).hasClass("on")) {
-                __instance._olist.eq(i).addClass("on");
+                // 带有follow字段的奇穴，共享一个编辑框
+                const follow = Number($(this).attr("data-follow"));
+                const target_olist = __instance._olist
+                    .eq(follow - 1 || i)
+                    .eq(0);
+                target_olist.addClass("on");
+                // 打开时同步奇穴选中状态
+                target_olist.children("li").removeClass("is-active");
+                const type = $(this).attr("data-type");
+                const _pos = [];
+                if (type != 3) {
+                    _pos.push($(this).attr("data-pos"));
+                } else {
+                    __instance._clist
+                        .children("li[data-type='3']")
+                        .each(function (index, ele) {
+                            _pos.push($(ele).attr("data-pos"));
+                        });
+                }
+                _pos.forEach(_pos => {
+                    if (_pos == 0) return;
+                    target_olist
+                        .children(`li[data-pos='${_pos}']`)
+                        .addClass("is-active");
+                });
             }
         });
 
         //点击任意空白处
-        $("body").on("click", function () {
+        $("body").on("click", function (e) {
+            window.aaa = __instance._olist;
+            // 如果点击的是type=3的olist，不关闭
+            if (
+                __instance._obox.children(".w-qixue-type-3").has(e.target)
+                    .length > 0
+            )
+                return;
             __instance._clist.children("li").removeClass("on");
             __instance._obox.removeClass("on");
             __instance._olist.removeClass("on");
@@ -417,9 +532,11 @@ class JX3_QIXUE {
             let isNotExist = $(this).children(".w-qixue-item-pop").length == 0;
             let __html = `<b class="u-name">${name}</b>`;
             __html += `<b class="u-skill">${skill_type}</b>`;
-            if (is_skill && meta != "null" && meta != undefined) __html += `<em class="u-meta">${meta}</em>`;
+            if (is_skill && meta != "null" && meta != undefined)
+                __html += `<em class="u-meta">${meta}</em>`;
             __html += `<span class="u-desc">${desc}</span>`;
-            if (is_skill && extend != "null" && meta != undefined) __html += `<em class="u-extend">${extend}</em>`;
+            if (is_skill && extend != "null" && meta != undefined)
+                __html += `<em class="u-extend">${extend}</em>`;
 
             if (isNotExist) {
                 let wrapper_prefix = `<span class="w-qixue-item-pop">`;
@@ -441,11 +558,27 @@ class JX3_QIXUE {
     //切换奇穴
     _changeEvent() {
         let __instance = this;
-        this._olist.on("click", "li", function () {
-            //缓存选择
-            let $from = $(this);
-            let __order = $from.parent("ul").index();
-            let $to = __instance._citems.eq(__order);
+
+        const set_order = function ($to, $from) {
+            if (!$from) {
+                const data = empty_data($to.index());
+                $.each(__instance._item_attr_list, function (i, val) {
+                    $to.attr(`data-${val}`, data[val]);
+                });
+                $to.find("img").attr("src", `${__instance._img_path}null.png`);
+                $to.find("img").attr("alt", data["name"]);
+                $to.find(".u-title").text(data["name"]);
+                $to.removeClass("w-qixue-is_skill");
+                __instance.sq[$to.index()] = 0;
+                __instance.txt[$to.index()] = data["name"];
+                __instance.code.sq = __instance.sq.toString();
+                __instance.overview[$to.index()] = {
+                    id: data["id"],
+                    icon: data["icon"],
+                    name: data["name"],
+                };
+                return;
+            }
 
             //更改li属性
             $.each(__instance._item_attr_list, function (i, val) {
@@ -453,7 +586,10 @@ class JX3_QIXUE {
             });
 
             //更改图片&标题
-            $to.find("img").attr("src", `${__instance._img_path + $from.attr("data-icon")}.png`);
+            $to.find("img").attr(
+                "src",
+                `${__instance._img_path + $from.attr("data-icon")}.png`
+            );
             $to.find("img").attr("alt", $from.attr("data-name"));
             $to.find(".u-title").text($from.attr("data-name"));
 
@@ -463,14 +599,51 @@ class JX3_QIXUE {
                 : $to.removeClass("w-qixue-is_skill");
 
             //更新内部数据
-            __instance.sq[__order] = $from.attr("data-pos");
-            __instance.txt[__order] = $from.attr("data-name");
+            __instance.sq[$to.index()] = $from.attr("data-pos");
+            __instance.txt[$to.index()] = $from.attr("data-name");
             __instance.code.sq = __instance.sq.toString();
-            __instance.overview[__order] = {
+            __instance.overview[$to.index()] = {
                 id: ~~$from.attr("data-id"),
                 icon: ~~$from.attr("data-icon"),
                 name: $from.attr("data-name"),
             };
+        };
+
+        this._olist.on("click", "li", function () {
+            //缓存选择
+            let $from = $(this);
+
+            let __order = $from.parent("ul").index();
+            let $to = __instance._citems.eq(__order);
+
+            // 获取当前层的类型
+            const is_selected = $from.hasClass("is-active");
+            const type = $from.parent().attr("data-type");
+            if (is_selected) {
+                const pos = $from.attr("data-pos");
+                // 取消选中
+                if (type == 3) {
+                    const target_order = __instance._clist
+                        .children(`li[data-type='3'][data-pos='${pos}']`)
+                        .eq(0);
+                    if (!target_order.length) return;
+                    $to = target_order;
+                    $(this).removeClass("is-active");
+                }
+
+                set_order($to, null);
+            } else {
+                if (type == 3) {
+                    const empty_order = __instance._clist
+                        .children("li[data-type='3'][data-pos='0']")
+                        .eq(0);
+                    if (!empty_order.length) return;
+                    $to = empty_order;
+                    $(this).addClass("is-active");
+                }
+
+                set_order($to, $from);
+            }
 
             //触发自定义事件
             $(document).trigger("JX3_QIXUE_Change", __instance);
@@ -479,7 +652,13 @@ class JX3_QIXUE {
 
     _resetData(opt) {
         this._qixue_url = __dataPath + "talent/" + opt.client + "/";
-        this._total_levels = opt.client == "wujie" ? 4 : 12; //无界奇穴4重，旗舰奇穴12重
+        let total_levels = 12;
+        if (opt.client == "wujie") total_levels = 4;
+        else {
+            const optVersion = Number(opt.version.split("v")[1] || "20250921");
+            if (optVersion > 20250921) total_levels = 10; //20250922版本起，旗舰端奇穴10重
+        }
+        this._total_levels = total_levels;
     }
 
     /* 公开方法 
@@ -493,13 +672,13 @@ class JX3_QIXUE {
         let __opt = {};
 
         if (!opt.sq) {
-            opt.sq = opt.client == "wujie" ? "1,1,1,1" : "1,1,1,1,1,1,1,1,1,1,1,1";
+            opt.sq = opt.client == "wujie" ? "1,1,1,1" : "1,1,1,1,1,1,1,1,1,1";
         }
         this._resetData(opt);
         __opt = this._checkParam(opt);
 
         this._structureViewBox(__opt);
-        return this._build(__opt).then((data) => {
+        return this._build(__opt).then(data => {
             $(document).trigger("JX3_QIXUE_Change", this);
             return data;
         });

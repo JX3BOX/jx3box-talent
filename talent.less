@@ -1,5 +1,5 @@
-@import './node_modules/@jx3box/jx3box-common/css/var.less';
-@import './node_modules/csslab/base.less';
+@import "./node_modules/@jx3box/jx3box-common/css/var.less";
+@import "./node_modules/csslab/base.less";
 
 // 输出样式
 .w-qixue-box {
@@ -40,7 +40,7 @@
     // overflow-x: auto;
     // display: block;
 
-    &.isQQBrowser{
+    &.isQQBrowser {
         padding-right: 30px !important; //fix
     }
 
@@ -158,11 +158,19 @@
             }
         } */
 
+        &.w-qixue-type-1-last,
+        &.w-qixue-type-2-last {
+            .mr(30px);
+        }
+
+        &[data-type="3"]:not(.w-qixue-type-3-center)::before {
+            opacity: 0;
+        }
+
         &:before {
             content: "";
-            .size(44px,11px);
+            .size(46px,12px);
             background: url("@{url}qixue/fold.png") no-repeat 0 0;
-            margin: 0 2px;
 
             .none;
         }
@@ -181,20 +189,27 @@
         .none;
     }
     //全部扩展列表容器
+
     .w-qixue-obox {
         .pa;
         .lb(@lp,100%);
         white-space: nowrap;
         font-size: 0;
         &.on {
-            .db;
+            display: flex;
+            flex-direction: row;
+            align-items: flex-end;
         }
     }
-    //单个扩展列表
+    // 新版奇穴限制最大高度，旧版的最多五个无需限制
+    &:not(.w-qixue-v20250921) {
+        .w-qixue-olist {
+            max-height: unset;
+        }
+    }
     .w-qixue-olist {
         .pr;
         .z(1000);
-        .dbi;
         .y(bottom);
         background-color: @color;
         padding: @space - @bo;
@@ -203,6 +218,22 @@
         border: @bo solid @gray;
         border-bottom: none;
         box-shadow: 3px -3px 3px rgba(0, 0, 0, 0.4);
+
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        width: min-content;
+        max-height: 304px;
+        gap: 8px 20px;
+
+        &.w-qixue-type-3 {
+            width: 184px;
+        }
+
+        &.w-qixue-type-1-last,
+        &.w-qixue-type-2-last {
+            .mr(30px);
+        }
 
         &:last-child {
             margin-right: 0;
@@ -214,7 +245,6 @@
         }
     }
     .w-qixue-olist-item {
-        margin-bottom: 8px;
         .pr;
 
         .u-pic {
@@ -228,7 +258,8 @@
             }
         }
 
-        &:hover {
+        &:hover,
+        &.is-active {
             .u-pic {
                 &:before {
                     .tm(0);
@@ -264,7 +295,7 @@
         .r(3px);
         padding: 10px;
         width: 320px;
-        max-width:none;
+        max-width: none;
 
         * {
             .db;
@@ -319,18 +350,24 @@
         .w-qixue-xf {
             .none;
         }
-        .w-qixue-clist{
+        .w-qixue-clist {
             // .w(100%);
             // overflow-x: auto;
             .db;
             .clearfix;
-            margin-top:0;
+            margin-top: 0;
+            .w-qixue-clist-item {
+                &.w-qixue-type-1-last,
+                &.w-qixue-type-2-last {
+                    .mr(unset);
+                }
+            }
         }
     }
 }
 
 .w-qixue-editable {
-    .w-qixue-xf{
+    .w-qixue-xf {
         margin-top: 5px;
     }
     li {
@@ -380,11 +417,13 @@
         .w-qixue-obox {
             left: 0;
         }
+
         .w-qixue-olist {
             .clearfix;
             .none;
             &.on {
                 .db;
+                width: unset;
             }
 
             li {
@@ -405,13 +444,13 @@
 }
 
 // 打印样式
-@media print{
-	.w-qixue-box{
+@media print {
+    .w-qixue-box {
         page-break-inside: avoid !important;
-        padding-right:40px;
-        .w-qixue-clist-item{
-            padding-left:5px;
-            padding-right:0;
+        padding-right: 40px;
+        .w-qixue-clist-item {
+            padding-left: 5px;
+            padding-right: 0;
             transform: scale(0.85);
         }
     }

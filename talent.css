@@ -259,12 +259,18 @@
 .w-qixue-box .w-qixue-clist-item:last-child {
   margin-right: 0;
 }
+.w-qixue-box .w-qixue-clist-item.w-qixue-type-1-last,
+.w-qixue-box .w-qixue-clist-item.w-qixue-type-2-last {
+  margin-right: 30px;
+}
+.w-qixue-box .w-qixue-clist-item[data-type="3"]:not(.w-qixue-type-3-center)::before {
+  opacity: 0;
+}
 .w-qixue-box .w-qixue-clist-item:before {
   content: "";
-  width: 44px;
-  height: 11px;
+  width: 46px;
+  height: 12px;
   background: url("https://img.jx3box.com/img/qixue/fold.png") no-repeat 0 0;
-  margin: 0 2px;
   display: none;
 }
 .w-qixue-box .w-qixue-clist-item.on:before {
@@ -283,14 +289,17 @@
   font-size: 0;
 }
 .w-qixue-box .w-qixue-obox.on {
-  display: block;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+}
+.w-qixue-box:not(.w-qixue-v20250921) .w-qixue-olist {
+  max-height: unset;
 }
 .w-qixue-box .w-qixue-olist {
   position: relative;
-  z-index: 1000;
-  display: inline-block;
-  *display: inline;
   *zoom: 1;
+  z-index: 1000;
   vertical-align: bottom;
   background-color: #2e4946;
   padding: 8px;
@@ -299,7 +308,20 @@
   border: 2px solid #6f888a;
   border-bottom: none;
   box-shadow: 3px -3px 3px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: min-content;
+  max-height: 304px;
+  gap: 8px 20px;
   transform: scale(0);
+}
+.w-qixue-box .w-qixue-olist.w-qixue-type-3 {
+  width: 184px;
+}
+.w-qixue-box .w-qixue-olist.w-qixue-type-1-last,
+.w-qixue-box .w-qixue-olist.w-qixue-type-2-last {
+  margin-right: 30px;
 }
 .w-qixue-box .w-qixue-olist:last-child {
   margin-right: 0;
@@ -308,7 +330,6 @@
   transform: scale(1);
 }
 .w-qixue-box .w-qixue-olist-item {
-  margin-bottom: 8px;
   position: relative;
   *zoom: 1;
 }
@@ -322,7 +343,8 @@
   border-radius: 48px;
   z-index: 5;
 }
-.w-qixue-box .w-qixue-olist-item:hover .u-pic:before {
+.w-qixue-box .w-qixue-olist-item:hover .u-pic:before,
+.w-qixue-box .w-qixue-olist-item.is-active .u-pic:before {
   opacity: 0;
   filter: alpha(opacity=0);
 }
@@ -417,6 +439,10 @@
     display: table;
     clear: both;
   }
+  .w-qixue-box .w-qixue-clist .w-qixue-clist-item.w-qixue-type-1-last,
+  .w-qixue-box .w-qixue-clist .w-qixue-clist-item.w-qixue-type-2-last {
+    margin-right: unset;
+  }
 }
 .w-qixue-editable .w-qixue-xf {
   margin-top: 5px;
@@ -472,6 +498,7 @@
   }
   .w-qixue-editable .w-qixue-olist.on {
     display: block;
+    width: unset;
   }
   .w-qixue-editable .w-qixue-olist li {
     margin-right: 10px;
