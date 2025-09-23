@@ -80,6 +80,7 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
             skillID: "技能ID",
             position: "纵向位置",
             type: "奇穴类型",
+            color: "奇穴颜色",
         },
         talents: {},
         talent_null: require("./includes/null"),
@@ -153,6 +154,7 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
                     point[`SkillLevel${index}`],
                 ];
                 let skill = datas.skill_txt[`${keys[0]}_${keys[1]}`];
+                let color = Number(point[`SkillColor${index}`]);
                 if (!skill) skill = datas.skill_txt[`${keys[0]}_0`];
                 if (skill) {
                     let order = ((~~point.PointID - 1) % 12) + 1;
@@ -165,6 +167,7 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
                         skillID: keys[0],
                         position: _position++,
                         type,
+                        color,
                     });
                     if (!datas.talents[mountID]) {
                         datas.talents[mountID] = [];
@@ -184,10 +187,12 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
         let icon = parseInt(skill.IconID);
         let order = `${qixue.order}`; //第几层
         let pos = qixue.position; //某层的第几个
+        let color = Number(qixue.color);
         let is_skill = !isNullOrZero(skill.HelpDesc) ? 1 : 0;
         let meta = skill["SpecialDesc"];
         let extend = skill["HelpDesc"];
         let id = qixue.skillID;
+    
 
         return {
             name,
@@ -199,6 +204,7 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
             meta,
             extend,
             id,
+            color
         };
     };
     Logger.info("构建奇穴......");

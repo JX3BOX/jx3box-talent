@@ -107,7 +107,7 @@ class JX3_QIXUE {
             return `/output/${opt.client}/${opt.version}.json`;
         }
         return this._qixue_url + opt.version + ".json";
-    };
+    }
 
     //获取奇穴数据
     _getTalentData(opt) {
@@ -125,6 +125,30 @@ class JX3_QIXUE {
         });
     }
 
+    _appendClassByData(opt) {
+        this._clist.children().each((i, ele) => {
+            if (!this._data[opt.xf]) return;
+            if (!this._data[opt.xf][i + 1]) return;
+            const type = this._data[opt.xf][i + 1]["_type"];
+            const follow = this._data[opt.xf][i + 1]["_follow"];
+            if (type) {
+                ele.setAttribute("data-type", type);
+            }
+            if (follow) {
+                ele.setAttribute("data-follow", follow);
+            }
+            if (type) {
+                if (i === 0) {
+                    ele.classList.add("w-qixue-type-1-last");
+                } else if (i === 6) {
+                    ele.classList.add("w-qixue-type-2-last");
+                } else if (i === 8) {
+                    ele.classList.add("w-qixue-type-3-center");
+                }
+            }
+        });
+    }
+
     //构建模拟器
     async _build(opt) {
         //参数检查
@@ -138,27 +162,9 @@ class JX3_QIXUE {
         //step.0 加载不同版本json文件
         if (opt.version != this.version) {
             this._data = await this._getTalentData(opt);
-            // 根据json文件。判断版本添加样式类
-            this._clist.children().each((i, ele) => {
-                const type = this._data[opt.xf][i + 1]["_type"];
-                const follow = this._data[opt.xf][i + 1]["_follow"];
-                if (type) {
-                    ele.setAttribute("data-type", type);
-                }
-                if (follow) {
-                    ele.setAttribute("data-follow", follow);
-                }
-                if (type) {
-                    if (i === 0) {
-                        ele.classList.add("w-qixue-type-1-last");
-                    } else if (i === 6) {
-                        ele.classList.add("w-qixue-type-2-last");
-                    } else if (i === 8) {
-                        ele.classList.add("w-qixue-type-3-center");
-                    }
-                }
-            });
         }
+        // 根据json文件。判断版本添加样式类
+        this._appendClassByData(opt);
 
         //step.1 配置参数
         this._setConfig(opt);
@@ -672,7 +678,7 @@ class JX3_QIXUE {
         let __opt = {};
 
         if (!opt.sq) {
-            opt.sq = opt.client == "wujie" ? "1,1,1,1" : "1,1,1,1,1,1,1,1,1,1";
+            opt.sq = opt.client == "wujie" ? "1,1,1,1" : "1,1,1,1,1,1,1,1,2,3";
         }
         this._resetData(opt);
         __opt = this._checkParam(opt);
