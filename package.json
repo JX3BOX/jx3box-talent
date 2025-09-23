@@ -9,8 +9,8 @@
     },
     "dependencies": {
         "@jx3box/jx3box-build-common": "^0.1.9",
-        "@jx3box/jx3box-common": "^8.7.2",
-        "@jx3box/jx3box-data": "^3.8.3",
+        "@jx3box/jx3box-common": "^8.7.4",
+        "@jx3box/jx3box-data": "^3.8.8",
         "ansi-escapes": "^5.0.0",
         "cli-color": "^2.0.3",
         "jquery": "^3.5.1",
@@ -34,6 +34,6 @@
     "scripts": {
         "update": "npm install @jx3box/jx3box-common@latest @jx3box/jx3box-data@latest",
         "build": "npx lessc ./talent.less ./talent.css",
-        "talent": "node ./tools/prepare.js && node ./tools/build.js && node ./tools/mobile_build.js"
+        "talent": "node ./tools/build.js && node ./tools/mobile_build.js"
     }
 }

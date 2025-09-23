@@ -4,14 +4,24 @@
 > 现在，只有上帝知道了……  
 > 先酱，给一个无限期的承诺，或许有一天我会重构。  
 
+## 测试
+
+```bash
+npx vite --port=4000
+
+# 访问：http://localhost:4000/test/index.html
+```
 
 ## 使用空白配置
+
 ```javascript
 let talent = new JX3_QIXUE()
 ```
 
 ## 使用指定配置
+
 返回一个promise,参数为该talent实例
+
 ```javascript
 let talent = new JX3_QIXUE({
     "xf":"冰心诀",
@@ -21,7 +31,9 @@ let talent = new JX3_QIXUE({
 ```
 
 ## 重载配置/方案
+
 返回一个promise,参数为该talent实例
+
 ```javascript
 talent.load({
     "xf":"冰心诀",
@@ -31,7 +43,9 @@ talent.load({
 ```
 
 ## 全局事件
+
 任何修改，会触发`JX3_QIXUE_Change`全局事件，传递talent实例作为参数
+
 ```javascript
 $(document).on("JX3_QIXUE_Change", function(e, ins) {
     let __data = {};
@@ -43,4 +57,5 @@ $(document).on("JX3_QIXUE_Change", function(e, ins) {
 ```
 
 ## 其它属性
+
 ![Talent](./talent.png)

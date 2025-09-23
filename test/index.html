@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>奇穴模拟器测试</title>
+    <link rel="stylesheet" href="/talent.less">
+</head>
+
+<body>
+    <div class="container">
+        <div class="qx-container"></div>
+
+    </div>
+</body>
+<style>
+    body {
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        padding-top: 400px;
+        height: 100dvh;
+    }
+</style>
+<script type="module">
+    import $ from 'jquery';
+    import JX3_QIXUE from '/index.js';
+
+    const options = {
+        debug: true,
+        version: "v20250922",
+        container: ".qx-container",
+        xf: "冰心诀",
+        sq: "1,2,3,4",
+        editable: true,
+        client: "wujie",
+    };
+    let talent = new JX3_QIXUE(options);
+    $(document).on("JX3_QIXUE_Change", function (e, ins) {
+        let __data = {};
+        __data.version = ins.version;
+        __data.xf = ins.xf;
+        __data.sq = ins.sq.join(",");
+        let str = JSON.stringify(__data);
+        console.log(str);
+    });
+</script>
+
+
+</html>
