@@ -5,6 +5,7 @@ const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 
 const force_ids = require("@jx3box/jx3box-data/data/xf/forceid.json");
 const xf = require("@jx3box/jx3box-data/data/xf/xf.json");
+const { range } = require("lodash");
 
 const src = "./raw";
 const dist = "./dist";
@@ -57,13 +58,13 @@ async function init() {
     const result = [];
     const talents = {};
     for (const point of points) {
-        const school = schoolMap[point.ForceID];
+        const school = schoolMap[point.ForceID] || '通用';
         const kungfu = kungfuMap[point.KungFuID];
         const mountID = xf[kungfu]["id"];
 
         let _talents = [];
 
-        [1, 2, 3, 4, 5]
+        range(1, 13)
             .map(v => [`SkillID${v}`, `SkillLevel${v}`])
             .forEach(([id, level]) => {
                 let skillId = `${point[id]}-${point[level]}`;

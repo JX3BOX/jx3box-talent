@@ -18,6 +18,7 @@ const filter = require("./includes/filter.js");
 const dateFormat = require("./includes/dateFormat");
 const force_ids = require("@jx3box/jx3box-data/data/xf/forceid.json");
 const xf = require("@jx3box/jx3box-data/data/xf/xf.json");
+const { range } = require("lodash");
 
 const kungfu_map = Object.values(xf).reduce((acc, cur) => {
     if (cur.name === "山居剑意") cur.name = "问水诀";
@@ -78,6 +79,7 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
             desc: "奇穴描述",
             skillID: "技能ID",
             position: "纵向位置",
+            type: "奇穴类型",
         },
         talents: {},
         talent_null: require("./includes/null"),
@@ -141,10 +143,11 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
             let school = datas.school_map[point.ForceID];
             let kungfu = datas.kungfu_map[point.KungFuID];
             let mountID = datas.xf[kungfu]["id"];
-            
+
             let _talents = [];
             let _position = 1;
-            for (let index of [1, 2, 3, 4, 5]) {
+            const type = point.Type;
+            for (let index of range(1, 13)) {
                 let keys = [
                     point[`SkillID${index}`],
                     point[`SkillLevel${index}`],
@@ -161,6 +164,7 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
                         desc: skill.Desc,
                         skillID: keys[0],
                         position: _position++,
+                        type,
                     });
                     if (!datas.talents[mountID]) {
                         datas.talents[mountID] = [];
@@ -205,7 +209,33 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
             //心法不存在，创建心法
             if (!datas.result[kungfu]) datas.result[kungfu] = {};
             //奇穴位置不存在，建立奇穴位
-            if (!datas.result[kungfu][order]) datas.result[kungfu][order] = {};
+            if (!datas.result[kungfu][order]) {
+                datas.result[kungfu][order] = {};
+                if (item.type) {
+                    datas.result[kungfu][order]["_type"] = item.type;
+                    const cur_order = datas.temp
+                        .filter(
+                            t =>
+                                t.kungfu == item.kungfu && t.order == item.order
+                        )
+                        .map(t => t.name)
+                        .filter(Boolean)
+                        .join("|");
+                    const cur_kungfu = datas.result[kungfu];
+                    const follow = Object.keys(cur_kungfu).find(order => {
+                        const s = Object.values(cur_kungfu[order])
+                            .map(t => t.name)
+                            .filter(Boolean)
+                            .join("|");
+                        if (s == cur_order) return true;
+                    });
+                    if (follow) {
+                        datas.result[kungfu][order]["_follow"] = follow;
+                        continue;
+                    }
+                }
+            }
+            if (datas.result[kungfu][order]["_follow"]) continue; //跟随的跳过
             let skill = getSkill(item);
             datas.result[kungfu][order][position] = skill;
             bar.tick(1, {
@@ -218,7 +248,10 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
     }
     Logger.info("构建结束,开始输出...");
     fs.writeFileSync("./dist/std/talents.json", JSON.stringify(datas.talents));
-    fs.writeFileSync("./output/std/talents.json", JSON.stringify(datas.talents));
+    fs.writeFileSync(
+        "./output/std/talents.json",
+        JSON.stringify(datas.talents)
+    );
     fs.writeFileSync(
         `./output/std/v${dateFormat(new Date())}.json`,
         JSON.stringify(datas.result)
