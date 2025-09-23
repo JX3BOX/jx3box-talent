@@ -12,6 +12,8 @@ npx vite --port=4000
 # 访问：http://localhost:4000/test/index.html
 ```
 
+**注意**：由于vite支持大多数新版本的特性，但是现有的大多数前端项目依旧使用的webpack搭配旧版本的loader，所以某些新语法可能会爆炸。发版前请先将index.js内容复制到某个前端项目的node_modules内看能不能跑起来~
+
 ## 使用空白配置
 
 ```javascript

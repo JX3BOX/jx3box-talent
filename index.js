@@ -102,7 +102,7 @@ class JX3_QIXUE {
         return this._build(opt);
     }
 
-    _getTalentDataUrl = opt => {
+    _getTalentDataUrl(opt) {
         if (opt.debug) {
             return `/output/${opt.client}/${opt.version}.json`;
         }
