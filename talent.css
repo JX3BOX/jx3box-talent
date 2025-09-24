@@ -185,6 +185,26 @@
 .w-qixue-box .w-qixue-clist {
   margin: 0;
 }
+.w-qixue-box .w-qixue-clist-item[data-color="0"]:not([data-is_skill="1"]) .u-pic:after,
+.w-qixue-box .w-qixue-olist-item[data-color="0"]:not([data-is_skill="1"]) .u-pic:after {
+  background: url("https://img.jx3box.com/img/qixue/newqixue1_9.png") no-repeat 0 0;
+}
+.w-qixue-box .w-qixue-clist-item[data-color="1"] .u-pic:after,
+.w-qixue-box .w-qixue-olist-item[data-color="1"] .u-pic:after {
+  background: url("https://img.jx3box.com/img/qixue/newqixue1_1.png") no-repeat 0 0;
+}
+.w-qixue-box .w-qixue-clist-item[data-color="2"] .u-pic:after,
+.w-qixue-box .w-qixue-olist-item[data-color="2"] .u-pic:after {
+  background: url("https://img.jx3box.com/img/qixue/newqixue1_2.png") no-repeat 0 0;
+}
+.w-qixue-box .w-qixue-clist-item[data-color="3"] .u-pic:after,
+.w-qixue-box .w-qixue-olist-item[data-color="3"] .u-pic:after {
+  background: url("https://img.jx3box.com/img/qixue/newqixue1_4.png") no-repeat 0 0;
+}
+.w-qixue-box .w-qixue-clist-item[data-color="4"] .u-pic:after,
+.w-qixue-box .w-qixue-olist-item[data-color="4"] .u-pic:after {
+  background: url("https://img.jx3box.com/img/qixue/newqixue1_5.png") no-repeat 0 0;
+}
 .w-qixue-box .w-qixue-clist-item .u-pic,
 .w-qixue-box .w-qixue-olist-item .u-pic {
   display: block;
@@ -200,13 +220,15 @@
 }
 .w-qixue-box .w-qixue-clist-item .u-pic:after,
 .w-qixue-box .w-qixue-olist-item .u-pic:after {
-  width: 52px;
-  height: 52px;
+  width: 80px;
+  height: 80px;
   position: absolute;
-  left: -2px;
-  top: -2px;
-  background: url("https://img.jx3box.com/img/qixue/bg.png") no-repeat 0 0;
+  left: -10px;
+  top: -10px;
   z-index: 6;
+  pointer-events: none;
+  transform: scale(1.06);
+  transform-origin: center;
 }
 .w-qixue-box .w-qixue-clist-item img,
 .w-qixue-box .w-qixue-olist-item img {
@@ -214,6 +236,8 @@
   padding: 0;
   margin: 0;
   border: none;
+  border: 2px solid #485053;
+  box-sizing: border-box;
 }
 .w-qixue-box .w-qixue-clist-item .u-title,
 .w-qixue-box .w-qixue-olist-item .u-title {
@@ -248,13 +272,6 @@
   padding-right: 10px;
   position: relative;
   *zoom: 1;
-  /* &.w-qixue-isskill .u-pic{
-            &:before{
-                .pa;.lt(0);
-                .full;
-                border:2px solid @color-cyan;
-            }
-        } */
 }
 .w-qixue-box .w-qixue-clist-item:last-child {
   margin-right: 0;
@@ -267,10 +284,14 @@
   opacity: 0;
 }
 .w-qixue-box .w-qixue-clist-item:before {
+  position: relative;
+  *zoom: 1;
   content: "";
   width: 46px;
   height: 12px;
   background: url("https://img.jx3box.com/img/qixue/fold.png") no-repeat 0 0;
+  bottom: 2px;
+  z-index: 7;
   display: none;
 }
 .w-qixue-box .w-qixue-clist-item.on:before {
@@ -343,10 +364,13 @@
   border-radius: 48px;
   z-index: 5;
 }
-.w-qixue-box .w-qixue-olist-item:hover .u-pic:before,
+.w-qixue-box .w-qixue-olist-item:hover:not(.is-disabled) .u-pic:before,
 .w-qixue-box .w-qixue-olist-item.is-active .u-pic:before {
   opacity: 0;
   filter: alpha(opacity=0);
+}
+.w-qixue-box .w-qixue-olist-item.is-disabled {
+  cursor: not-allowed;
 }
 .w-qixue-box .w-qixue-olist-item:last-child {
   margin-bottom: 0;
@@ -354,9 +378,6 @@
 .w-qixue-box .w-qixue-is_skill .u-pic:before,
 .w-qixue-box .w-qixue-is_skill .u-pic img {
   border-radius: 0;
-}
-.w-qixue-box .w-qixue-is_skill .u-pic:after {
-  display: none;
 }
 .w-qixue-box .w-qixue-item-pop {
   position: absolute;
