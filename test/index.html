@@ -9,41 +9,183 @@
 </head>
 
 <body>
-    <div class="container">
+    <div id="app" class="container">
         <div class="qx-container"></div>
-
+        <div class="toolbar">
+            <n-input readonly type="textarea" :rows="5" style="width: 300px;" :value="output"
+                placeholder="当前奇穴编码"></n-input>
+            <n-radio-group v-model:value="client" name="client">
+                <n-radio-button value="std" label="旗舰"></n-radio-button>
+                <n-radio-button value="wujie" label="无界"></n-radio-button>
+            </n-radio-group>
+            <n-flex>
+                <n-switch v-model:value="debug"></n-switch>
+                <span style="margin-left: 8px;">调试模式</span>
+            </n-flex>
+            <n-flex>
+                <n-switch v-model:value="editable"></n-switch>
+                <span style="margin-left: 8px;">可编辑</span>
+            </n-flex>
+            <n-select :options="xfOptions" v-model:value="xf" placeholder="选择心法"></n-select>
+            <n-select :options="versions" v-model:value="version" placeholder="选择版本"></n-select>
+        </div>
     </div>
 </body>
 <style>
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
     body {
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
         padding-top: 400px;
         height: 100dvh;
+        overflow: hidden;
+    }
+
+    .toolbar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        max-width: 400px;
     }
 </style>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/naive-ui"></script>
 <script type="module">
+    import xfmap from "@jx3box/jx3box-data/data/xf/xf.json";
     import $ from 'jquery';
     import JX3_QIXUE from '/index.js';
+    import JX3BOX from "@jx3box/jx3box-common/data/jx3box.json";
+    const { __iconPath, __dataPath } = JX3BOX;
 
-    const options = {
-        debug: true,
-        version: "v20250922",
-        container: ".qx-container",
-        xf: "毒经",
-        sq: "1,2,3,4,1,2,3,4,4,4",
-        editable: true
-    };
-    let talent = new JX3_QIXUE(options);
-    $(document).on("JX3_QIXUE_Change", function (e, ins) {
-        let __data = {};
-        __data.version = ins.version;
-        __data.xf = ins.xf;
-        __data.sq = ins.sq.join(",");
-        let str = JSON.stringify(__data);
-        console.log(str);
-    });
+    const { createApp } = Vue;
+    const app = createApp({
+        data() {
+            return {
+                versions: [],
+                client: 'std',
+                version: 'v20250923',
+                xf: '毒经',
+                sq: '',
+                editable: true,
+                debug: false,
+                driver: null,
+                output: ""
+            }
+        },
+        mounted() {
+            this.init();
+        },
+        computed: {
+            loadUrl() {
+                if (this.debug) {
+                    return `/output/${this.client}/`
+                }
+                return __dataPath + "talent/" + this.client + "/";
+            },
+            defaultSq() {
+                if (this.client == "wujie") {
+                    return "1,1,1,1";
+                }
+                const version = Number(this.version.split("v")[1]);
+                if (version > 20250921) {
+                    return "1,1,1,1,1,1,1,1,1,1";
+                } else {
+                    return "1,1,1,1,1,1,1,1,1,1,1,1";
+                }
+            },
+            xfOptions() {
+                return Object.keys(xfmap).filter(key => !['通用', '山居剑意'].includes(key)).map(key => {
+                    return {
+                        label: key,
+                        value: key
+                    }
+                });
+            },
+            reloadTrigger() {
+                return [this.version, this.xf, this.debug, this.editable];
+            },
+
+        },
+        watch: {
+            client() {
+                this.sq = this.defaultSq;
+                this.init();
+            },
+            version() {
+                this.sq = this.defaultSq;
+            },
+            reloadTrigger: {
+                deep: true,
+                handler() {
+                    if (!this.driver) return;
+                    this.driver.then((talent) => {
+                        const params = {
+                            version: this.version,
+                            xf: this.xf,
+                            sq: this.sq || this.defaultSq,
+                            editable: this.editable,
+                            client: this.client,
+                            debug: this.debug
+                        };
+                        talent.load(params);
+                    })
+                }
+            }
+        },
+        methods: {
+            init() {
+                this.loadVersions().then(() => {
+                    this.sq = this.defaultSq;
+                    this.initTalent();
+                });
+            },
+            initTalent() {
+                const options = {
+                    debug: this.debug,
+                    version: this.version,
+                    container: ".qx-container",
+                    xf: this.xf,
+                    sq: this.defaultSq,
+                    client: this.client,
+                    editable: this.editable
+                };
+                this.driver = new JX3_QIXUE(options);
+                const vm = this;
+                $(document).on("JX3_QIXUE_Change", function (e, ins) {
+                    let __data = {};
+                    __data.version = ins.version;
+                    __data.xf = ins.xf;
+                    __data.sq = ins.sq.join(",");
+                    vm.sq = __data.sq;
+                    let str = JSON.stringify(__data, null, 4);
+                    vm.output = str;
+                });
+            },
+            loadVersions() {
+                return fetch(this.loadUrl + 'index.json').then(res => res.json()).then(data => {
+                    this.versions = data.map((item) => {
+                        return {
+                            label: `${item.name} - ${item.version}`,
+                            value: item.version
+                        }
+                    });
+                });
+            }
+        }
+    })
+    app.use(naive);
+    app.mount('#app');
 </script>
 
 
