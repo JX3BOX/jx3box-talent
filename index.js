@@ -44,6 +44,7 @@ const empty_data = i => ({
     name: `第${ZHCN_NUM[i]}重`,
     order: i + 1,
     pos: 0,
+    color: 0,
 });
 
 class JX3_QIXUE {
@@ -81,6 +82,7 @@ class JX3_QIXUE {
             "is_skill", //是否为技能
             "meta", //技能短述
             "extend", //技能长述
+            "color", //技能颜色
         ];
         this._data = {}; //格式化数据对象
         this.isQQBrowser = window.navigator.userAgent.includes("QQBrowser");
@@ -126,6 +128,12 @@ class JX3_QIXUE {
     }
 
     _appendClassByData(opt) {
+        this._clist
+            .children()
+            .removeClass("w-qixue-type-1-last")
+            .removeClass("w-qixue-type-2-last")
+            .removeClass("w-qixue-type-3-center");
+        if (opt == "wujie") return;
         this._clist.children().each((i, ele) => {
             if (!this._data[opt.xf]) return;
             if (!this._data[opt.xf][i + 1]) return;
@@ -322,7 +330,7 @@ class JX3_QIXUE {
         //结构化当前list
         let __clist = `
             <li class="w-qixue-clist-item">
-                <span class="u-pic"><img src="" alt=""/></span>
+                <span class="u-pic"><img src="" alt="" draggable="false"/></span>
                 <span class="u-title"></span>
             </li>
         `.repeat(this._total_levels);
@@ -353,7 +361,7 @@ class JX3_QIXUE {
             }
 
             $.each(__instance._item_attr_list, function (j, key) {
-                __items.eq(i).attr(`data-${key}`, point[key]);
+                __items.eq(i).attr(`data-${key}`, point[key] || 0);
             });
             //图片与文字
             let icon_url = `${__instance._img_path + point["icon"]}.png`;
@@ -393,6 +401,7 @@ class JX3_QIXUE {
             } else if (type_class_name && i === 6) {
                 type_class_name += " w-qixue-type-2-last";
             }
+
             __olist += `
                 <ul class="w-qixue-olist ${type_class_name}" data-level="${
                 i + 1
@@ -419,10 +428,11 @@ class JX3_QIXUE {
                         data-is_skill="${point["is_skill"]}"
                         data-meta="${point["meta"]}"
                         data-extend="${point["extend"]}"
+                        data-color="${point["color"] || 0}"
                     >
                         <span class="u-pic"><img src="${
                             __instance._img_path + point["icon"]
-                        }.png" alt="${point["name"]}"/></span>
+                        }.png" alt="${point["name"]}" draggable="false" /></span>
                         <span class="u-title">${point["name"]}</span>
                     </li>
                 `);
@@ -449,6 +459,27 @@ class JX3_QIXUE {
 
         //step.3 切换奇穴
         this._changeEvent();
+    }
+
+    _posIsDisabled(order, pos) {
+        // 如果版本小于20250922，没有需要禁用的奇穴
+        if (Number(this.version.split("v")[1]) <= 20250921) return false;
+        // 如果type=1的奇穴color=0，禁用所有color!=0的奇穴
+        const type1_color = this._clist
+            .children("li[data-type='1']")
+            .eq(0)
+            .attr("data-color");
+        const target = this._olist.eq(order).children(`li[data-pos='${pos}']`);
+        if (!target.length) return false;
+        const target_color = target.attr("data-color");
+        if (type1_color == 0 && target_color != 0) return true;
+        if (
+            type1_color != 0 &&
+            target_color != 0 &&
+            target_color != type1_color
+        )
+            return true;
+        return false;
     }
 
     //展开折叠事件
@@ -506,6 +537,16 @@ class JX3_QIXUE {
                         .children(`li[data-pos='${_pos}']`)
                         .addClass("is-active");
                 });
+                if (type == 1) return;
+                // 判断奇穴禁用位
+                target_olist.children("li").each(function (index, ele) {
+                    const pos = $(ele).attr("data-pos");
+                    if (__instance._posIsDisabled(i, pos)) {
+                        $(ele).addClass("is-disabled");
+                    } else {
+                        $(ele).removeClass("is-disabled");
+                    }
+                });
             }
         });
 
@@ -516,8 +557,24 @@ class JX3_QIXUE {
             if (
                 __instance._obox.children(".w-qixue-type-3").has(e.target)
                     .length > 0
-            )
+            ) {
                 return;
+            }
+            // 如果点击的是type=2的olist中的，color!=0且color!=type1_color的，不关闭
+            if (
+                __instance._obox.children(".w-qixue-type-2").has(e.target)
+                    .length > 0
+            ) {
+                // 调用_posIsDisabled判断是否是被禁用的奇穴，点击不关闭
+                const $target = $(e.target).closest("li");
+                if ($target.length > 0) {
+                    const order = $target.parent().index();
+                    const pos = $target.attr("data-pos");
+                    if (__instance._posIsDisabled(order, pos)) {
+                        return;
+                    }
+                }
+            }
             __instance._clist.children("li").removeClass("on");
             __instance._obox.removeClass("on");
             __instance._olist.removeClass("on");
@@ -625,20 +682,35 @@ class JX3_QIXUE {
             // 获取当前层的类型
             const is_selected = $from.hasClass("is-active");
             const type = $from.parent().attr("data-type");
+            const old_type1_color = __instance._clist
+                .children("li[data-type='1']")
+                .eq(0)
+                .attr("data-color");
+
             if (is_selected) {
                 const pos = $from.attr("data-pos");
+
                 // 取消选中
                 if (type == 3) {
-                    const target_order = __instance._clist
-                        .children(`li[data-type='3'][data-pos='${pos}']`)
-                        .eq(0);
+                    const target_order = __instance._clist.children(
+                        `li[data-type='3'][data-pos='${pos}']`
+                    );
                     if (!target_order.length) return;
                     $to = target_order;
                     $(this).removeClass("is-active");
                 }
-
-                set_order($to, null);
+                $to.each((_, ele) => {
+                    set_order($(ele), null);
+                });
             } else {
+                const pos = $from.attr("data-pos");
+                if (
+                    $to.attr("data-type") != 1 &&
+                    __instance._posIsDisabled(__order, pos)
+                ) {
+                    return;
+                }
+
                 if (type == 3) {
                     const empty_order = __instance._clist
                         .children("li[data-type='3'][data-pos='0']")
@@ -649,6 +721,24 @@ class JX3_QIXUE {
                 }
 
                 set_order($to, $from);
+            }
+
+            // 如果type1_color发生了变化，取消所有不可选的奇穴的选中状态
+            const now_type1_color = __instance._clist
+                .children("li[data-type='1']")
+                .eq(0)
+                .attr("data-color");
+            if (old_type1_color != now_type1_color) {
+                __instance._clist.children("li").each((_, ele) => {
+                    const order = $(ele).attr("data-order");
+                    const pos = $(ele).attr("data-pos");
+                    const is_disabled = __instance._posIsDisabled(
+                        order - 1,
+                        pos
+                    );
+                    if (!is_disabled) return;
+                    set_order($(ele), null);
+                });
             }
 
             //触发自定义事件

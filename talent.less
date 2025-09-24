@@ -4,6 +4,11 @@
 // 输出样式
 .w-qixue-box {
     @url: "https://img.jx3box.com/img/";
+    @color-0-border: "@{url}qixue/newqixue1_9.png";
+    @color-1-border: "@{url}qixue/newqixue1_1.png";
+    @color-2-border: "@{url}qixue/newqixue1_2.png";
+    @color-3-border: "@{url}qixue/newqixue1_4.png";
+    @color-4-border: "@{url}qixue/newqixue1_5.png";
 
     zoom: 1;
 
@@ -15,6 +20,7 @@
     @out-bo: 2px;
     @lp:@xf-l + @xf-r + @xf + @out-bo;
     @space: 10px;
+    @big-space: 30px;
     @bo: 2px;
 
     //局部z级别
@@ -91,6 +97,32 @@
     //公共单项
     .w-qixue-clist-item,
     .w-qixue-olist-item {
+        &[data-color="0"]:not([data-is_skill="1"]) .u-pic {
+            &:after {
+                background: url("@{color-0-border}") no-repeat 0 0;
+            }
+        }
+        &[data-color="1"] .u-pic {
+            &:after {
+                background: url("@{color-1-border}") no-repeat 0 0;
+            }
+        }
+        &[data-color="2"] .u-pic {
+            &:after {
+                background: url("@{color-2-border}") no-repeat 0 0;
+            }
+        }
+        &[data-color="3"] .u-pic {
+            &:after {
+                background: url("@{color-3-border}") no-repeat 0 0;
+            }
+        }
+        &[data-color="4"] .u-pic {
+            &:after {
+                background: url("@{color-4-border}") no-repeat 0 0;
+            }
+        }
+
         .u-pic {
             .db;
             .pr;
@@ -100,11 +132,13 @@
                 .db;
             }
             &:after {
-                .size(52px);
+                .size(80px);
                 .pa;
-                .lt(-2px,-2px);
-                background: url("@{url}qixue/bg.png") no-repeat 0 0;
+                .lt(-10px,-10px);
                 .z(@icon-decorate + 1);
+                pointer-events: none;
+                transform: scale(1.06);
+                transform-origin: center;
             }
         }
         img {
@@ -113,6 +147,8 @@
             padding: 0;
             margin: 0;
             border: none;
+            border: 2px solid #485053;
+            box-sizing: border-box;
         }
         .u-title {
             .white;
@@ -150,17 +186,9 @@
             margin-right: 0;
         }
 
-        /* &.w-qixue-isskill .u-pic{
-            &:before{
-                .pa;.lt(0);
-                .full;
-                border:2px solid @color-cyan;
-            }
-        } */
-
         &.w-qixue-type-1-last,
         &.w-qixue-type-2-last {
-            .mr(30px);
+            .mr(@big-space);
         }
 
         &[data-type="3"]:not(.w-qixue-type-3-center)::before {
@@ -168,9 +196,12 @@
         }
 
         &:before {
+            .pr;
             content: "";
             .size(46px,12px);
             background: url("@{url}qixue/fold.png") no-repeat 0 0;
+            bottom: 2px;
+            .z(@icon-decorate + 2);
 
             .none;
         }
@@ -258,13 +289,17 @@
             }
         }
 
-        &:hover,
+        &:hover:not(.is-disabled),
         &.is-active {
             .u-pic {
                 &:before {
                     .tm(0);
                 }
             }
+        }
+
+        &.is-disabled {
+            cursor: not-allowed;
         }
 
         &:last-child {
@@ -278,9 +313,6 @@
             &:before,
             img {
                 .r(0);
-            }
-            &:after {
-                .none;
             }
         }
     }
