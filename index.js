@@ -323,7 +323,7 @@ class JX3_QIXUE {
         this._clist = this._box.children(".w-qixue-clist");
         this._obox = this._box.children(".w-qixue-obox");
 
-        if (Number(opt.version.split("v")[1]) > 20250921) {
+        if (this._isNewVersion(opt)) {
             this._box.addClass("w-qixue-v20250921");
         }
 
@@ -746,15 +746,22 @@ class JX3_QIXUE {
         });
     }
 
+    _isNewVersion(opt) {
+        const version = opt && opt.version ? opt.version : "v20200522";
+        const optVersion = Number(version.split("v")[1] || "20250921");
+        return optVersion > 20250921;
+    }
+
+    _confirmTotalLevels(opt) {
+        const client = opt && opt.client ? opt.client : "std";
+        if (client == "wujie") return 4;
+        if (this._isNewVersion(opt)) return 10;
+        return 12;
+    }
+
     _resetData(opt) {
         this._qixue_url = __dataPath + "talent/" + opt.client + "/";
-        let total_levels = 12;
-        if (opt.client == "wujie") total_levels = 4;
-        else {
-            const optVersion = Number(opt.version.split("v")[1] || "20250921");
-            if (optVersion > 20250921) total_levels = 10; //20250922版本起，旗舰端奇穴10重
-        }
-        this._total_levels = total_levels;
+        this._total_levels = this._confirmTotalLevels(opt);
     }
 
     /* 公开方法 
