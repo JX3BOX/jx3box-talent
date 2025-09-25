@@ -62,11 +62,10 @@ class JX3_QIXUE {
             version: "v20200522",
             container: ".qx-container",
             xf: "其它",
-            sq: "1,1,1,1,1,1,1,1,1,1,1,1",
+            sq: this._getDefaultSq(opt),
             editable: false,
             client: "std",
         };
-        if (opt && opt.client == "wujie" && !opt.sq) opt.sq = "1,1,1,1";
         // 未传递
         if (!opt) opt = this._default;
 
@@ -764,6 +763,12 @@ class JX3_QIXUE {
         this._total_levels = this._confirmTotalLevels(opt);
     }
 
+    _getDefaultSq(opt) {
+        if (opt.client == "wujie") return "1,1,1,1";
+        if (this._isNewVersion(opt)) return "1,1,1,1,1,1,1,1,2,3";
+        return "1,1,1,1,1,1,1,1,2,3,3,3";
+    }
+
     /* 公开方法 
     ------------------------------------------
     */
@@ -775,7 +780,7 @@ class JX3_QIXUE {
         let __opt = {};
 
         if (!opt.sq) {
-            opt.sq = opt.client == "wujie" ? "1,1,1,1" : "1,1,1,1,1,1,1,1,2,3";
+            opt.sq = this._getDefaultSq(opt);
         }
         this._resetData(opt);
         __opt = this._checkParam(opt);
