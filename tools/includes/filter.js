@@ -16,6 +16,8 @@ function Filter(desc, datas) {
     desc = filterByAdd(desc);
     //处理破招 -- 基于120版本破招改动奇穴部分
     desc = filterBySurplus(desc);
+    //处理技能名词解释
+    desc = filterBySkillNoun(desc, datas);
     //过滤其它<>
     desc = desc.replace(/\<.*?\>/g, "");
     //处理undefined
@@ -154,6 +156,31 @@ function filterByBuffAt(desc) {
     }
     return desc;
 }
+
+// 处理技能名词解释 <NounID xx>
+function filterBySkillNoun(desc, datas) {
+    let reg = new RegExp(/\<NounID (\d+)\>/g);
+    let subreg = new RegExp(/\<NounID (\d+)\>/);
+    let hasMatched = reg.test(desc);
+
+    if (hasMatched) {
+        let arr = desc.match(reg);
+        for (let i = 0; i < arr.length; i++) {
+            let capture = subreg.exec(arr[i]);
+            let id = capture[1];
+
+            let noun = datas.skill_nouns && datas.skill_nouns[id];
+            if (noun && noun.szName) {
+                // 只保留名称，格式：[名称]
+                desc = desc.replace(arr[i], `[${noun.szName}]`);
+            } else {
+                desc = desc.replace(arr[i], "");
+            }
+        }
+    }
+    return desc;
+}
+
 function filterUndefined(desc) {
     return desc.replace(/undefined/g, "*");
 }

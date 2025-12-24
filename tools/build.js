@@ -67,6 +67,12 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
             acc[key] = cur;
             return acc;
         }, {}),
+        skill_nouns: (
+            await readTabFile(path.join(__dirname, "../raw/skill_nouns.txt"))
+        ).reduce((acc, cur) => {
+            acc[cur.nNounID] = cur;
+            return acc;
+        }, {}),
         points: await readTabFile(
             path.join(__dirname, "../raw/TenExtraPoint.tab")
         ),
