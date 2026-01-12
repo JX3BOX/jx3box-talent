@@ -112,6 +112,7 @@ class JX3_QIXUE {
 
     //获取奇穴数据
     _getTalentData(opt) {
+        this.last_client = opt.client;
         return new Promise((resolve, reject) => {
             $.ajax({
                 url: this._getTalentDataUrl(opt),
@@ -167,7 +168,7 @@ class JX3_QIXUE {
         }
 
         //step.0 加载不同版本json文件
-        if (opt.version != this.version) {
+        if (opt.version != this.version || opt.client != this.last_client) {
             this._data = await this._getTalentData(opt);
         }
         // 根据json文件。判断版本添加样式类
