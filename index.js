@@ -133,28 +133,75 @@ class JX3_QIXUE {
             .removeClass("w-qixue-type-1-last")
             .removeClass("w-qixue-type-2-last")
             .removeClass("w-qixue-type-3-center");
-        if (opt == "wujie") return;
+        const order_meta_map = this._getOrderMetaMap(opt.xf);
         this._clist.children().each((i, ele) => {
-            if (!this._data[opt.xf]) return;
-            if (!this._data[opt.xf][i + 1]) return;
-            const type = this._data[opt.xf][i + 1]["_type"];
-            const follow = this._data[opt.xf][i + 1]["_follow"];
+            const meta = order_meta_map[i + 1];
+            ele.removeAttribute("data-type");
+            ele.removeAttribute("data-follow");
+            if (!meta) return;
+            const { type, follow, classNames } = meta;
             if (type) {
                 ele.setAttribute("data-type", type);
             }
             if (follow) {
                 ele.setAttribute("data-follow", follow);
             }
-            if (type) {
-                if (i === 0) {
-                    ele.classList.add("w-qixue-type-1-last");
-                } else if (i === 6) {
-                    ele.classList.add("w-qixue-type-2-last");
-                } else if (i === 8) {
-                    ele.classList.add("w-qixue-type-3-center");
-                }
-            }
+            classNames.forEach(class_name => ele.classList.add(class_name));
         });
+    }
+
+    _getOrderMetaMap(xf) {
+        const map = this._data[xf];
+        if (!map) return {};
+
+        const orders = Object.keys(map)
+            .filter(key => !isNaN(key))
+            .map(Number)
+            .sort((a, b) => a - b);
+        const order_meta_map = orders.reduce((acc, order) => {
+            acc[order] = {
+                type: Number(map[order]["_type"]) || 0,
+                follow: Number(map[order]["_follow"]) || 0,
+                classNames: [],
+            };
+            return acc;
+        }, {});
+
+        let type_group = [];
+        const flush_type_group = () => {
+            if (!type_group.length) return;
+            const type = type_group[0].type;
+            if (type === 1 || type === 2) {
+                const last = type_group[type_group.length - 1];
+                order_meta_map[last.order].classNames.push(
+                    `w-qixue-type-${type}-last`
+                );
+            } else if (type === 3) {
+                const center = type_group[Math.floor(type_group.length / 2)];
+                order_meta_map[center.order].classNames.push(
+                    "w-qixue-type-3-center"
+                );
+            }
+            type_group = [];
+        };
+
+        orders.forEach(order => {
+            const meta = order_meta_map[order];
+            if (!meta.type) {
+                flush_type_group();
+                return;
+            }
+            if (type_group.length && type_group[0].type !== meta.type) {
+                flush_type_group();
+            }
+            type_group.push({
+                order,
+                type: meta.type,
+            });
+        });
+        flush_type_group();
+
+        return order_meta_map;
     }
 
     //构建模拟器
@@ -171,6 +218,13 @@ class JX3_QIXUE {
         if (opt.version != this.version || opt.client != this.last_client) {
             this._data = await this._getTalentData(opt);
         }
+        const actual_total_levels = this._getDataTotalLevels(this._data, opt.xf);
+        if (actual_total_levels && actual_total_levels != this._total_levels) {
+            this._total_levels = actual_total_levels;
+            this.txt = new Array(this._total_levels);
+            this._structureViewBox(opt);
+        }
+        opt.sq = this._normalizeSQ(opt.sq, this._total_levels);
         // 根据json文件。判断版本添加样式类
         this._appendClassByData(opt);
 
@@ -248,24 +302,67 @@ class JX3_QIXUE {
 
     //检查序列
     _checkParamSQ(sq) {
-        let __sq = sq.split(",");
-        if (__sq.length != this._total_levels) {
-            throw `[checkParams]:奇穴应为${this._total_levels}重,请检查`;
+        return this._normalizeSQ(sq, this._total_levels);
+    }
+
+    _normalizeSQ(sq, total_levels) {
+        let __sq = Array.isArray(sq)
+            ? sq.map(item => `${item}`.trim())
+            : String(sq || "")
+                  .split(",")
+                  .map(item => item.trim());
+
+        if (!__sq.length || (__sq.length === 1 && __sq[0] === "")) {
+            __sq = [];
         }
-        return sq;
+
+        if (!total_levels) return __sq.join(",");
+
+        if (__sq.length > total_levels) {
+            __sq = __sq.slice(0, total_levels);
+        }
+
+        const fallback = this._getSQFallbackValue(__sq);
+        while (__sq.length < total_levels) {
+            __sq.push(fallback);
+        }
+
+        return __sq.join(",");
+    }
+
+    _getSQFallbackValue(sq) {
+        for (let i = sq.length - 1; i >= 0; i--) {
+            const value = sq[i];
+            if (value !== undefined && value !== null && value !== "") {
+                return value;
+            }
+        }
+        return "1";
+    }
+
+    _getDataTotalLevels(data, xf) {
+        const xf_data = data && data[xf];
+        if (!xf_data) return 0;
+        return Object.keys(xf_data).filter(key => !isNaN(key)).length;
     }
 
     //设置私有数据
     _setConfig(opt) {
+        this._total_levels =
+            this._getDataTotalLevels(this._data, opt.xf) ||
+            this._total_levels;
+        if (this.txt.length != this._total_levels) {
+            this.txt = new Array(this._total_levels);
+        }
         this.version = opt.version;
         this.xf = opt.xf;
         this.map = this._data[opt.xf];
-        this.sq = opt.sq.split(",");
+        this.sq = this._normalizeSQ(opt.sq, this._total_levels).split(",");
         this.editable = opt.editable;
         this.code = {
             version: opt.version,
             xf: opt.xf,
-            sq: opt.sq,
+            sq: this.sq.join(","),
             client: opt.client,
         };
         this.overview = this._buildTalentOutputData(this.sq, this.map);
@@ -275,7 +372,8 @@ class JX3_QIXUE {
     _buildTalentOutputData(sq, data) {
         let overview = [];
         sq.forEach((item, i) => {
-            let _record = data[i + 1][item];
+            let level = data[i + 1];
+            let _record = level ? level[item] : null;
             if (!_record) {
                 overview.push({
                     id: 0,
@@ -385,21 +483,17 @@ class JX3_QIXUE {
     _buildEditBox() {
         //给总容器添加class钩子以控制是否显示展开/折叠图标
         this._box.addClass("w-qixue-editable");
+        const order_meta_map = this._getOrderMetaMap(this.xf);
 
         //创建每重奇穴中的列表容器
         let __olist = ``;
-        let type_3_is_created = false;
         for (let i = 0; i < this._total_levels; i++) {
-            if (this._data[this.xf][i + 1]["_type"] == 3) {
-                if (type_3_is_created) continue;
-                type_3_is_created = true;
-            }
-            const type = this._data[this.xf][i + 1]["_type"] || 0;
+            const meta = order_meta_map[i + 1];
+            if (!meta || meta.follow) continue;
+            const type = meta.type;
             let type_class_name = type ? `w-qixue-type-${type}` : "";
-            if (type_class_name && i === 0) {
-                type_class_name += " w-qixue-type-1-last";
-            } else if (type_class_name && i === 6) {
-                type_class_name += " w-qixue-type-2-last";
+            if (meta.classNames.length) {
+                type_class_name += ` ${meta.classNames.join(" ")}`;
             }
 
             __olist += `
@@ -514,9 +608,11 @@ class JX3_QIXUE {
             if ($(this).hasClass("on")) {
                 // 带有follow字段的奇穴，共享一个编辑框
                 const follow = Number($(this).attr("data-follow"));
+                const target_level = follow || i + 1;
                 const target_olist = __instance._olist
-                    .eq(follow - 1 || i)
+                    .filter(`[data-level='${target_level}']`)
                     .eq(0);
+                const target_olist_index = target_olist.index();
                 target_olist.addClass("on");
                 // 打开时同步奇穴选中状态
                 target_olist.children("li").removeClass("is-active");
@@ -541,7 +637,7 @@ class JX3_QIXUE {
                 // 判断奇穴禁用位
                 target_olist.children("li").each(function (index, ele) {
                     const pos = $(ele).attr("data-pos");
-                    if (__instance._posIsDisabled(i, pos)) {
+                    if (__instance._posIsDisabled(target_olist_index, pos)) {
                         $(ele).addClass("is-disabled");
                     } else {
                         $(ele).removeClass("is-disabled");
@@ -553,27 +649,20 @@ class JX3_QIXUE {
         //点击任意空白处
         $("body").on("click", function (e) {
             window.aaa = __instance._olist;
+            const $target = $(e.target).closest(".w-qixue-olist-item");
+            if ($target.length > 0) {
+                const order = $target.parent().index();
+                const pos = $target.attr("data-pos");
+                if (__instance._posIsDisabled(order, pos)) {
+                    return;
+                }
+            }
             // 如果点击的是type=3的olist，不关闭
             if (
                 __instance._obox.children(".w-qixue-type-3").has(e.target)
                     .length > 0
             ) {
                 return;
-            }
-            // 如果点击的是type=2的olist中的，color!=0且color!=type1_color的，不关闭
-            if (
-                __instance._obox.children(".w-qixue-type-2").has(e.target)
-                    .length > 0
-            ) {
-                // 调用_posIsDisabled判断是否是被禁用的奇穴，点击不关闭
-                const $target = $(e.target).closest("li");
-                if ($target.length > 0) {
-                    const order = $target.parent().index();
-                    const pos = $target.attr("data-pos");
-                    if (__instance._posIsDisabled(order, pos)) {
-                        return;
-                    }
-                }
             }
             __instance._clist.children("li").removeClass("on");
             __instance._obox.removeClass("on");

@@ -10,6 +10,7 @@ const fs = require('fs');
 const { readTabFile, writeCsvFile, buildProgressBar, Logger, isNullOrZero } = require('./includes/utils');
 const filter = require('./includes/filter.js');
 const dateFormat = require('./includes/dateFormat');
+const { buildPointOrderMap, buildNullTalent } = require('./includes/talent');
 const force_ids = require('@jx3box/jx3box-data/data/xf/forceid.json');
 const xf = require('@jx3box/jx3box-data/data/xf/xf.json');
 
@@ -57,6 +58,7 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
 			return acc;
 		}, {}),
 		points: await readTabFile(path.join(__dirname, '../raw/skill_mobile/tenextrapoint.tab')),
+		point_order_map: {},
 		temp: [],
 		temp_title_map: {
 			school: '门派',
@@ -68,9 +70,9 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
 			position: '纵向位置',
 		},
 		talents: {},
-		talent_null: require('./includes/null'),
 		result: {},
 	};
+	datas.point_order_map = buildPointOrderMap(datas.points);
 	Logger.info('合并需要用到的 skill 数据......');
 	{
 		let bar = await buildProgressBar(Object.keys(datas.skill_txt).length, '合并需要用到的 skill 数据');
@@ -127,7 +129,7 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
 				let skill = datas.skill_txt[`${keys[0]}_${keys[1]}`];
 				if (!skill) skill = datas.skill_txt[`${keys[0]}_0`];
 				if (skill) {
-					let order = ((~~point.PointID - 1) % 4) + 1;
+					let order = datas.point_order_map[point.KungFuID][Number(point.PointID)];
 					datas.temp.push({
 						school,
 						kungfu,
@@ -188,7 +190,7 @@ const kungfu_map = Object.values(xf).reduce((acc, cur) => {
 				title: bar.title,
 			});
 		}
-		datas.result['其它'] = datas.talent_null;
+		datas.result['其它'] = buildNullTalent(datas.result);
 		bar.terminate();
 	}
 	Logger.info('构建结束,开始输出...');

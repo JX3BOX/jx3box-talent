@@ -125,6 +125,9 @@
             version() {
                 this.sq = this.defaultSq;
             },
+            debug() {
+                this.loadVersions();
+            },
             reloadTrigger: {
                 deep: true,
                 handler() {
