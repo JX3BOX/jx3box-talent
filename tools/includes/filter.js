@@ -18,6 +18,9 @@ function Filter(desc, datas) {
     desc = filterBySurplus(desc);
     //处理技能名词解释
     desc = filterBySkillNoun(desc, datas);
+    //处理buff名词解释
+    desc = filterByBuffNoun(desc);
+    desc = filterBySubNoun(desc);
     //过滤其它<>
     desc = desc.replace(/\<.*?\>/g, "");
     //处理undefined
@@ -173,6 +176,50 @@ function filterBySkillNoun(desc, datas) {
             if (noun && noun.szName) {
                 // 只保留名称，格式：[名称]
                 desc = desc.replace(arr[i], `[${noun.szName}]`);
+            } else {
+                desc = desc.replace(arr[i], "");
+            }
+        }
+    }
+    return desc;
+}
+
+// 处理buff名词解释 <BUFF_NOUN xx xx 名称>
+function filterByBuffNoun(desc) {
+    let reg = new RegExp(/\<BUFF_NOUN \d+ \d+ .+?\>/g);
+    let subreg = new RegExp(/\<BUFF_NOUN \d+ \d+ (.+?)\>/);
+    let hasMatched = reg.test(desc);
+
+    if (hasMatched) {
+        let arr = desc.match(reg);
+        for (let i = 0; i < arr.length; i++) {
+            let capture = subreg.exec(arr[i]);
+            let name = capture[1].trim();
+
+            if (name) {
+                desc = desc.replace(arr[i], `[${name}]`);
+            } else {
+                desc = desc.replace(arr[i], "");
+            }
+        }
+    }
+    return desc;
+}
+
+// 处理子技能名词解释 <SUB_NOUN xx xx 名称>
+function filterBySubNoun(desc) {
+    let reg = new RegExp(/\<SUB_NOUN \d+ \d+ .+?\>/g);
+    let subreg = new RegExp(/\<SUB_NOUN \d+ \d+ (.+?)\>/);
+    let hasMatched = reg.test(desc);
+
+    if (hasMatched) {
+        let arr = desc.match(reg);
+        for (let i = 0; i < arr.length; i++) {
+            let capture = subreg.exec(arr[i]);
+            let name = capture[1].trim();
+
+            if (name) {
+                desc = desc.replace(arr[i], `[${name}]`);
             } else {
                 desc = desc.replace(arr[i], "");
             }
