@@ -57,6 +57,7 @@ class JX3_QIXUE {
      * opt.client        {string}    旗舰端std、无界端wujie
      */
     constructor(opt) {
+        const useDefaultSq = !opt?.sq;
         //构建器参数默认值
         this._default = {
             version: "v20200522",
@@ -91,16 +92,16 @@ class JX3_QIXUE {
         this.code = { version: "", xf: "", sq: "", client: opt.client }; //代码版
         this.overview = [];
 
-        return this._init(opt);
+        return this._init(opt, useDefaultSq);
     }
 
     //初始化实例
-    _init(opt) {
+    _init(opt, useDefaultSq) {
         //构建基础视图
         this._structureViewBox(opt);
 
         //获取json源数据
-        return this._build(opt);
+        return this._build(opt, useDefaultSq);
     }
 
     _getTalentDataUrl(opt) {
@@ -205,7 +206,7 @@ class JX3_QIXUE {
     }
 
     //构建模拟器
-    async _build(opt) {
+    async _build(opt, useDefaultSq = false) {
         //参数检查
         if (opt == undefined) {
             opt = this._default;
@@ -224,6 +225,7 @@ class JX3_QIXUE {
             this.txt = new Array(this._total_levels);
             this._structureViewBox(opt);
         }
+        if (useDefaultSq) opt.sq = this._getDefaultSq(opt);
         opt.sq = this._normalizeSQ(opt.sq, this._total_levels);
         // 根据json文件。判断版本添加样式类
         this._appendClassByData(opt);
@@ -368,11 +370,40 @@ class JX3_QIXUE {
         this.overview = this._buildTalentOutputData(this.sq, this.map);
     }
 
+    // 同一候选池的已选位置按数值升序排列，空位保留在原层。
+    _sortSharedSQ() {
+        const groups = new Map();
+        Object.keys(this.map)
+            .filter(order => /^\d+$/.test(order))
+            .map(Number)
+            .sort((a, b) => a - b)
+            .forEach(order => {
+                const source = Number(this.map[order]._follow) || order;
+                if (Number(this.map[source]?._type) !== 3) return;
+                if (!groups.has(source)) groups.set(source, []);
+                groups.get(source).push(order - 1);
+            });
+
+        let changed = false;
+        groups.forEach(indexes => {
+            if (indexes.length < 2) return;
+            const selected = indexes.filter(index => Number(this.sq[index]) > 0);
+            const positions = selected.map(index => Number(this.sq[index])).sort((a, b) => a - b);
+            selected.forEach((index, offset) => {
+                if (Number(this.sq[index]) === positions[offset]) return;
+                this.sq[index] = String(positions[offset]);
+                changed = true;
+            });
+        });
+        return changed;
+    }
+
     //构建奇穴有效吐出数据
     _buildTalentOutputData(sq, data) {
         let overview = [];
         sq.forEach((item, i) => {
             let level = data[i + 1];
+            if (level?._follow) level = data[level._follow];
             let _record = level ? level[item] : null;
             if (!_record) {
                 overview.push({
@@ -437,7 +468,7 @@ class JX3_QIXUE {
     }
 
     //渲染展示容器
-    _renderViewBox() {
+    _renderViewBox(bindMetaEvents = true) {
         let __instance = this;
         let __items = this._citems;
 
@@ -476,7 +507,7 @@ class JX3_QIXUE {
             __instance.txt[i] = point["name"];
         });
 
-        this._loadMetaEvent(this._clist);
+        if (bindMetaEvents) this._loadMetaEvent(this._clist);
     }
 
     //构建编辑容器
@@ -830,6 +861,13 @@ class JX3_QIXUE {
                 });
             }
 
+            // 排序后同步编码、导出快照和预览，再通知使用方。
+            if (__instance._sortSharedSQ()) {
+                __instance.code.sq = __instance.sq.join(",");
+                __instance.overview = __instance._buildTalentOutputData(__instance.sq, __instance.map);
+                __instance._renderViewBox(false);
+            }
+
             //触发自定义事件
             $(document).trigger("JX3_QIXUE_Change", __instance);
         });
@@ -854,8 +892,11 @@ class JX3_QIXUE {
     }
 
     _getDefaultSq(opt) {
-        if (opt.client == "wujie") return "1,1,1,1";
-        if (this._isNewVersion(opt)) return "1,1,1,1,1,1,1,1,2,3";
+        if (opt?.client == "wujie") return "1,1,1,1";
+        if (this._isNewVersion(opt)) {
+            const levels = this._getDataTotalLevels(this._data, opt.xf) || this._confirmTotalLevels(opt);
+            return [...Array(levels - 3).fill(1), 1, 2, 3].join(",");
+        }
         return "1,1,1,1,1,1,1,1,2,3,3,3";
     }
 
@@ -869,14 +910,15 @@ class JX3_QIXUE {
 
         let __opt = {};
 
-        if (!opt.sq) {
+        const useDefaultSq = !opt.sq;
+        if (useDefaultSq) {
             opt.sq = this._getDefaultSq(opt);
         }
         this._resetData(opt);
         __opt = this._checkParam(opt);
 
         this._structureViewBox(__opt);
-        return this._build(__opt).then(data => {
+        return this._build(__opt, useDefaultSq).then(data => {
             $(document).trigger("JX3_QIXUE_Change", this);
             return data;
         });
